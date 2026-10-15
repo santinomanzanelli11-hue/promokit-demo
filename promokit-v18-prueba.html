@@ -741,7 +741,7 @@ notice('Generación parcial: revisá las cantidades.');
 }
 }catch(e){
 setStatus('No se pudo generar: '+(
-e.name==='AbortError'?'La solicitud tardó demasiado. Probá otra vez.':
+e.name==='AbortError'?'La conexión tardó demasiado. La generación podría haberse guardado y consumido un cupo. Antes de intentar otra vez, revisá tu historial y actualizá el contador.':
 e.message==='Failed to fetch'?'Revisá tu conexión y volvé a intentar.':
 e.message
 ),'error');
