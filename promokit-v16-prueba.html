@@ -144,6 +144,7 @@ h1{display:none}
 <option value="en">English</option>
 </select>
 <button id="generate" style="width:100%;margin-top:18px">✦ Generar</button>
+<button id="diagnoseHistory" class="secondary" type="button">Comprobar Supabase sin generar</button>
 <p class="small">No incluyas información privada. Revisá las afirmaciones antes de publicar. Esta versión de prueba tiene límites de uso por IP.</p>
 </section>
 
@@ -463,6 +464,17 @@ entry.append(title,info,button);area.append(entry);
 $('refreshHistory').onclick=refreshHistory;
 
 
+$('diagnoseHistory').onclick=async()=>{
+ const b=$('diagnoseHistory');b.disabled=true;
+ try{
+  const session=(await supabaseClient.auth.getSession()).data?.session;
+  if(!session){setStatus('Iniciá sesión primero.','error');return;}
+  const response=await fetch(ENDPOINT+'/diagnose-history',{method:'POST',headers:{'Authorization':'Bearer '+session.access_token}});
+  const data=await response.json();
+  setStatus('Diagnóstico: '+JSON.stringify(data.diagnostic||{error:data.error,status:response.status}),response.ok?'success':'error');
+ }catch(e){setStatus('Diagnóstico fallido: '+String(e.message||e),'error');}
+ finally{b.disabled=false;}
+};
 $('generate').onclick=async()=>{
 const payload=Object.fromEntries(keys.map(k=>[k,$(k).value.trim()]));
 if(payload.topic.length<3){
