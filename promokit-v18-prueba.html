@@ -178,6 +178,7 @@ html{scroll-behavior:smooth}section[id]{scroll-margin-top:18px}
 <p class="small" id="quotaText">Cargando tu contador mensual.</p>
 <button class="secondary" type="button" id="refreshQuota" data-i18n="refreshQuota">Actualizar contador</button>
 <button class="secondary" type="button" id="testRecovery">Probar recuperación (sin gastar cupos)</button>
+<button class="secondary" type="button" id="recoverPending">Recuperar última solicitud pendiente</button>
 <div class="quota-benefits">
 <div><strong>Free · Gratis</strong><p class="small">2 paquetes completos por mes.</p></div>
 <div><strong>Pro · Próximamente</strong><p class="small">30 paquetes por mes. Precio previsto: US$9/mes. Todavía no hay pagos habilitados.</p></div>
@@ -695,6 +696,28 @@ $('diagnoseHistory').onclick=async()=>{
  }catch(e){setStatus('Diagnóstico fallido: '+String(e.message||e),'error');}
  finally{b.disabled=false;}
 };
+const pendingKey='promokit-v18-pending-request';
+$('recoverPending').onclick=async()=>{
+ const b=$('recoverPending');b.disabled=true;
+ try{
+  const session=(await supabaseClient.auth.getSession()).data?.session;
+  if(!session)throw Error('Iniciá sesión primero.');
+  const saved=JSON.parse(localStorage.getItem(pendingKey)||'null');
+  if(!saved||saved.userId!==session.user.id)throw Error('No hay una solicitud pendiente de esta cuenta.');
+  const response=await fetch(ENDPOINT+'/request-status',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({requestId:saved.requestId})});
+  const result=await response.json();
+  if(!response.ok)throw Error(result.error||'HTTP '+response.status);
+  if(result.state==='completed'&&result.pack){
+   pack=result.pack;tab='ideas';showOnlyFavorites=false;render();
+   localStorage.removeItem(pendingKey);
+   setStatus('¡Paquete recuperado sin generar otro ni consumir otro cupo!','success');
+   await refreshHistory();await refreshQuota();
+  }else if(result.state==='processing')setStatus('La solicitud sigue pendiente. Esperá y volvé a consultar; no generes otra todavía.','error');
+  else if(result.state==='refunded'){localStorage.removeItem(pendingKey);setStatus('La solicitud fue reembolsada. Podés volver a generar.','success');await refreshQuota();}
+  else setStatus('No encontramos un paquete para esa solicitud. Revisá historial y contador antes de reintentar.','error');
+ }catch(e){setStatus('Recuperación: '+String(e.message||e),'error');}
+ finally{b.disabled=false;}
+};
 $('qualityPreview').onclick=()=>generateContent(true);
 $('generate').onclick=()=>generateContent(false);
 async function generateContent(preview=false){
@@ -712,6 +735,7 @@ return;
 }
 const session=sessionData.session;
 const requestId=preview?null:crypto.randomUUID();
+if(requestId)localStorage.setItem(pendingKey,JSON.stringify({requestId,userId:session.user.id,createdAt:Date.now()}));
 persist();
 const b=preview?$('qualityPreview'):$('generate');
 b.disabled=true;
@@ -747,6 +771,7 @@ throw Error((data.error||'Error '+response.status)+details);
 if(!data.pack||!Array.isArray(data.pack.ideas)||!Array.isArray(data.pack.scripts)||!Array.isArray(data.pack.calendar)){
 throw Error('El contenido llegó incompleto. Probá otra vez.');
 }
+if(requestId&&data.historySaved)localStorage.removeItem(pendingKey);
 pack=data.pack;
 tab='ideas';showOnlyFavorites=false;
 render();
@@ -766,9 +791,9 @@ if(!preview&&requestId&&(e.name==='AbortError'||e.message==='Failed to fetch')){
   try{
     const check=await fetch(ENDPOINT+'/request-status',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({requestId})});
     const status=await check.json();
-    if(check.ok&&status.state==='completed'&&status.pack){pack=status.pack;tab='ideas';showOnlyFavorites=false;render();setStatus('¡Recuperamos tu paquete guardado! No se generó otro ni se gastó un cupo adicional.','success');await refreshHistory();}
+    if(check.ok&&status.state==='completed'&&status.pack){localStorage.removeItem(pendingKey);pack=status.pack;tab='ideas';showOnlyFavorites=false;render();setStatus('¡Recuperamos tu paquete guardado! No se generó otro ni se gastó un cupo adicional.','success');await refreshHistory();}
     else if(check.ok&&status.state==='processing')setStatus('La generación todavía podría estar procesándose. Revisá el historial y el contador antes de intentar de nuevo.','error');
-    else if(check.ok&&status.state==='refunded')setStatus('La solicitud se devolvió correctamente. Podés generar otra vez.','error');
+    else if(check.ok&&status.state==='refunded'){localStorage.removeItem(pendingKey);setStatus('La solicitud se devolvió correctamente. Podés generar otra vez.','error');}
     else setStatus('No pudimos confirmar el estado. Revisá tu historial y contador antes de reintentar.','error');
   }catch{setStatus('No pudimos comprobar el estado. Revisá tu historial y contador antes de reintentar.','error');}
 }
