@@ -345,6 +345,7 @@ v.title,
 
 let verifiedPlan='free';
 let verifiedUserId=null;
+let lastSessionUserId=null;
 let showOnlyFavorites=false;
 const favoriteTypes=new Set(['ideas','scripts','longVideos','calendar','tips']);
 function favKey(){return verifiedUserId?'promokit-v18-favorites-'+verifiedUserId:null;}
@@ -507,6 +508,14 @@ async function refreshQuota(){
 $('refreshQuota').onclick=refreshQuota;
 
 function showSession(session){
+const nextUserId=session?.user?.id||null;
+if(nextUserId!==lastSessionUserId){
+ pack=null;tab='ideas';
+ $('results').innerHTML='<div class="empty muted">Tus resultados aparecerán acá. ✦</div>';
+ $('printResults').innerHTML='';$('tabs').hidden=true;$('tabs').innerHTML='';
+ $('actions').hidden=true;$('summary').hidden=true;
+ lastSessionUserId=nextUserId;
+}
 quotaRequestId++;
 verifiedPlan='free';verifiedUserId=null;showOnlyFavorites=false;
 showFreeAdPreview(false);
