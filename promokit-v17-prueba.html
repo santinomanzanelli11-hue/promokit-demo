@@ -1,0 +1,695 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0c1020">
+<title>PromoKit Creator AI | Ideas, guiones y calendario con IA · V17</title>
+<meta name="description" content="PromoKit Creator AI: ideas, guiones y calendario para creadores de contenido. Plan Free y futuro plan Pro. Versión de prueba.">
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#0b1020;color:#f1f5ff}
+header{border-bottom:1px solid #29334d;padding:18px max(18px,calc((100vw - 1150px)/2));display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header b,.accent{color:#80e3c0}
+.header-tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.lang-switch{background:#293653;color:#eaf1ff;padding:8px 11px;font-size:13px}.dashboard{margin-top:18px}.dash-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.dash-stat{padding:16px;background:#101629;border:1px solid #394767;border-radius:14px}.dash-stat strong{display:block;font-size:22px;color:#87e4c1}.dash-stat span{font-size:12px;color:#bac5df}@media(max-width:540px){.dash-grid{grid-template-columns:1fr}}
+.tag{font-size:12px;color:#80e3c0;border:1px solid #376b63;padding:7px 10px;border-radius:20px}
+main{max-width:1150px;margin:auto;padding:30px 16px 80px}
+h1{font-size:clamp(29px,5vw,48px);margin:10px 0}
+p{color:#bac5df;line-height:1.55}
+.layout{display:grid;grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:18px;margin-top:25px;align-items:start}
+.panel{background:#171e32;border:1px solid #303b58;border-radius:20px;padding:22px;min-width:0}
+label{display:block;font-size:14px;margin:14px 0 7px;color:#d9e1f7}
+input,textarea,select{width:100%;background:#101629;color:white;border:1px solid #394767;border-radius:11px;padding:13px;font:inherit}
+textarea{min-height:95px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:2px solid #87e4c1;outline-offset:1px}
+button{font:inherit;cursor:pointer;border:0;border-radius:11px;padding:12px 15px;background:#87e4c1;color:#101a26;font-weight:750}
+button:disabled{opacity:.55;cursor:wait}
+.secondary{background:#293653;color:#eaf1ff}
+.buttons,.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
+.result{background:#11182a;border:1px solid #303c5c;padding:16px;border-radius:13px;margin:12px 0;overflow-wrap:anywhere}
+.result p{white-space:pre-wrap;margin:9px 0}
+.small{font-size:12px;color:#9dabca}
+.error{color:#ffb9b9}
+.success{color:#87e4c1}
+.tabs button{font-size:13px;padding:10px}
+.tabs button.active{background:#87e4c1;color:#101a26}
+h2{font-size:20px}
+h3{font-size:16px;margin:4px 0 8px;line-height:1.4}
+.copy-script{font-size:12px;padding:9px 12px;margin-top:8px}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:15px 0}
+.stat{border:1px solid #303c5c;background:#11182a;border-radius:11px;padding:12px}
+.stat strong{display:block;font-size:22px}
+.stat span{font-size:11px;color:#bac5df}
+.muted{color:#9dabca}
+.footer{font-size:12px;text-align:center;margin-top:30px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);padding:11px 17px;border-radius:12px;background:#293653;color:white;box-shadow:0 8px 24px #0007;z-index:10;max-width:90vw}
+.empty{border:1px dashed #394767;border-radius:14px;padding:22px;text-align:center}
+.print-only{display:none}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid #101a2655;border-top-color:#101a26;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ad-preview{margin:18px 0;padding:18px;border:1px dashed #456079;border-radius:15px;background:#111b2d;text-align:center}.ad-preview strong{display:block;color:#dce9ff;margin:5px 0}.ad-preview p{margin:6px 0}.ad-label{font-size:11px;letter-spacing:.08em;color:#a8b8d3;text-transform:uppercase}.ad-preview[hidden]{display:none!important}
+.quota-panel{margin:16px 0 8px;padding:16px;background:#101629;border:1px solid #394767;border-radius:14px}
+.quota-meter{height:10px;background:#293653;border-radius:20px;overflow:hidden;margin:12px 0 8px}
+.quota-fill{height:100%;width:0;background:#87e4c1;transition:width .2s}
+.quota-benefits{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.quota-benefits>div{border:1px solid #394767;border-radius:12px;padding:12px}
+@media(max-width:460px){.quota-benefits{grid-template-columns:1fr}}
+.auth-panel{margin-top:20px}
+.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.auth-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+.auth-actions button{flex:1;min-width:120px}
+#accountEmail{overflow-wrap:anywhere}
+@media(max-width:800px){
+.layout{grid-template-columns:1fr}
+.summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+header{padding:16px}
+.auth-grid{grid-template-columns:1fr}
+}
+@media print{
+:root{color-scheme:light}
+body{background:white;color:#111}
+header,.form-panel,.auth-panel,.no-print,.buttons,.tabs,.toast,.footer{display:none!important}
+main{max-width:none;padding:0}
+.layout{display:block;margin:0}
+.panel{background:white;border:0;padding:0}
+.result{background:white;border:1px solid #ccc;break-inside:avoid;page-break-inside:avoid}
+.result p,.small,p{color:#222}
+h1{display:none}
+.print-only{display:block!important}
+.screen-only{display:none!important}
+.summary{display:none}
+.result h3{color:#111}
+#status{display:none}
+}
+
+/* V17: landing, mobile navigation and launch information */
+html{scroll-behavior:smooth}section[id]{scroll-margin-top:18px}
+.site-nav{max-width:1150px;margin:0 auto;padding:10px 16px;display:flex;gap:9px;overflow-x:auto;scrollbar-width:thin}
+.site-nav a{color:#d6e4ff;background:#17233b;border:1px solid #314562;border-radius:999px;padding:9px 13px;text-decoration:none;white-space:nowrap;font-size:13px}
+.site-nav a:focus-visible,.site-nav a:hover{outline:2px solid #87e4c1}
+.hero-v17{padding:30px 26px;background:radial-gradient(circle at 85% 10%,#214c4a 0,transparent 45%),linear-gradient(130deg,#1b2947,#101a2d);border:1px solid #365369;border-radius:24px}
+.hero-v17 h1{max-width:760px;line-height:1.12}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.hero-actions a{display:inline-block;text-decoration:none;background:#87e4c1;color:#101a26;padding:12px 17px;border-radius:11px;font-weight:750}
+.hero-actions a.secondary-link{background:#293653;color:#eaf1ff}
+.feature-grid,.pricing-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}
+.feature-card,.price-card{padding:20px;background:#171e32;border:1px solid #303b58;border-radius:17px}
+.price-card{background:#111b30}.price-card strong{font-size:28px;color:#87e4c1}
+.price-card p{margin:8px 0}.price-card a{display:inline-block;color:#87e4c1;margin-top:10px}
+.section-title{margin-top:34px}.legal-content details{background:#121b2e;border:1px solid #34415c;border-radius:12px;padding:15px;margin:10px 0}
+.legal-content summary{cursor:pointer;font-weight:700}.legal-content details p{margin:12px 0 0}
+.legal-note{border-left:3px solid #87e4c1;padding-left:12px}
+.mobile-shortcuts{display:flex;gap:8px;overflow-x:auto;margin:14px 0}.mobile-shortcuts a{flex:0 0 auto;background:#253653;color:#eaf1ff;text-decoration:none;border-radius:10px;padding:10px;font-size:13px}
+@media(max-width:800px){.feature-grid{grid-template-columns:1fr}.pricing-grid{grid-template-columns:1fr 1fr}.hero-v17{padding:22px}.layout{gap:12px}.panel{padding:16px}}
+@media(max-width:460px){.pricing-grid{grid-template-columns:1fr}.hero-actions a{width:100%;text-align:center}.site-nav{padding:8px 12px}main{padding-top:16px}}
+@media print{.site-nav,.hero-v17,.feature-grid,.pricing-grid,.legal-content,.mobile-shortcuts,.section-title{display:none!important}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+</head>
+<body>
+<header>
+<strong>✦ PromoKit <b>Creator</b></strong>
+<div class="header-tools"><span class="tag">STUDIO V17 · TEST</span><button type="button" id="langSwitch" class="lang-switch" aria-label="Switch interface language">English</button></div>
+</header>
+<nav class="site-nav no-print" aria-label="Navegación principal"><a href="#inicio" data-i18n="navHome">Inicio</a><a href="#planes" data-i18n="navPlans">Planes</a><a href="#cuenta" data-i18n="navAccount">Mi cuenta</a><a href="#generador" data-i18n="navGenerator">Generador</a><a href="#ayuda" data-i18n="navHelp">Ayuda</a></nav>
+<main>
+
+<section id="inicio" class="hero-v17 no-print">
+ <span class="tag" data-i18n="heroTag">TU ESTUDIO CREATIVO CON IA · VERSIÓN DE PRUEBA</span>
+ <h1 data-i18n="hero">Creá contenido que suene a vos.</h1>
+ <p data-i18n="intro">Ideas, guiones listos para grabar y un plan de publicación adaptado a tu audiencia.</p>
+ <div class="hero-actions"><a href="#generador" data-i18n="heroStart">Probar generador gratis</a><a href="#planes" class="secondary-link" data-i18n="heroPlans">Comparar planes</a></div>
+</section>
+<section class="no-print" aria-label="Beneficios">
+ <h2 class="section-title" data-i18n="benefitsTitle">Todo para crear más rápido</h2>
+ <div class="feature-grid">
+  <div class="feature-card"><h3 data-i18n="benefit1">15 ideas para publicar</h3><p data-i18n="benefit1Desc">Encontrá nuevos enfoques adaptados a tu temática.</p></div>
+  <div class="feature-card"><h3 data-i18n="benefit2">7 guiones cortos</h3><p data-i18n="benefit2Desc">Tené una base para grabar y personalizar.</p></div>
+  <div class="feature-card"><h3 data-i18n="benefit3">Calendario de 14 días</h3><p data-i18n="benefit3Desc">Organizá qué publicar y cuándo.</p></div>
+ </div>
+</section>
+<section id="planes" class="no-print">
+ <h2 class="section-title" data-i18n="plansTitle">Elegí cómo crear</h2>
+ <div class="pricing-grid">
+  <article class="price-card"><h3>Free</h3><strong>US$0</strong><p data-i18n="freePlanDesc">2 paquetes por mes, con espacio publicitario.</p><a href="#cuenta" data-i18n="freePlanCta">Crear cuenta gratis</a></article>
+  <article class="price-card"><h3>Pro</h3><strong>US$9 <span class="small" data-i18n="perMonth">/ mes (previsto)</span></strong><p data-i18n="proPlanDesc">30 paquetes por mes, sin anuncios. Pagos todavía no habilitados.</p><a href="#ayuda" data-i18n="proPlanCta">Consultar disponibilidad</a></article>
+ </div>
+</section>
+<div class="mobile-shortcuts no-print"><a href="#cuenta" data-i18n="shortcutAccount">Cuenta y cupos</a><a href="#historial" data-i18n="shortcutHistory">Historial</a><a href="#generador" data-i18n="shortcutGenerator">Crear contenido</a></div>
+
+<section id="cuenta" class="panel auth-panel no-print">
+<h2 data-i18n="account">Tu cuenta PromoKit</h2>
+<div id="authLoggedOut">
+<p class="small">Registrate gratis o iniciá sesión para probar el sistema de cuentas.</p>
+<div class="auth-grid">
+<div>
+<label for="authEmail" data-i18n="email">Correo electrónico</label>
+<input id="authEmail" type="email" autocomplete="email" placeholder="tu@email.com" maxlength="254">
+</div>
+<div>
+<label for="authPassword" data-i18n="password">Contraseña</label>
+<input id="authPassword" type="password" autocomplete="current-password" placeholder="Mínimo 8 caracteres" minlength="8">
+</div>
+</div>
+<div class="auth-actions">
+<button id="signUp" data-i18n="signUp">Crear cuenta</button>
+<button class="secondary" id="signIn" data-i18n="signIn">Iniciar sesión</button>
+</div>
+</div>
+<div id="authLoggedIn" hidden>
+<p>Sesión iniciada: <strong id="accountEmail"></strong></p>
+<div class="quota-panel" id="quotaPanel">
+<strong id="quotaHeading">Consultando tu plan…</strong>
+<div class="quota-meter" role="progressbar" aria-label="Paquetes utilizados" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0" id="quotaMeter"><div class="quota-fill" id="quotaFill"></div></div>
+<p class="small" id="quotaText">Cargando tu contador mensual.</p>
+<button class="secondary" type="button" id="refreshQuota" data-i18n="refreshQuota">Actualizar contador</button>
+<div class="quota-benefits">
+<div><strong>Free · Gratis</strong><p class="small">2 paquetes completos por mes.</p></div>
+<div><strong>Pro · Próximamente</strong><p class="small">30 paquetes por mes. Precio previsto: US$9/mes. Todavía no hay pagos habilitados.</p></div>
+</div>
+</div>
+<button class="secondary" id="signOut" data-i18n="signOut">Cerrar sesión</button>
+</div>
+<p id="authStatus" role="status" aria-live="polite" class="small">Preparando inicio de sesión…</p>
+</section>
+
+<section class="panel dashboard no-print" id="dashboard" hidden><h2 data-i18n="dashboard">Mi panel</h2><div class="dash-grid"><div class="dash-stat"><strong id="dashPlan">—</strong><span data-i18n="currentPlan">Plan actual</span></div><div class="dash-stat"><strong id="dashRemaining">—</strong><span data-i18n="remaining">Paquetes disponibles</span></div><div class="dash-stat"><strong id="dashHistory">—</strong><span data-i18n="saved">Paquetes en historial (últimos 15)</span></div></div><p class="small" id="dashRenewal" data-i18n="renewal">Los cupos se renuevan cada mes calendario. La suscripción todavía no está habilitada.</p></section>
+<section id="historial" class="panel no-print" style="margin-top:18px">
+<h2 data-i18n="history">Historial de generaciones · V17</h2>
+<p class="small">Tus paquetes guardados. El historial se consulta desde tu cuenta de Supabase.</p>
+<button id="refreshHistory" class="secondary" type="button" data-i18n="refreshHistory">Actualizar historial</button>
+<div id="historyList" style="margin-top:14px">Iniciá sesión para ver tu historial.</div>
+</section>
+<aside id="freeAdPreview" class="ad-preview no-print" aria-label="Espacio publicitario de prueba" hidden><span class="ad-label">Espacio publicitario · Vista previa</span><strong>PromoKit Free con publicidad</strong><p class="small">Aquí aparecerá un anuncio cuando habilitemos una red publicitaria. Por ahora no se muestra publicidad real.</p></aside>
+<div id="generador" class="layout">
+<section class="panel form-panel">
+<h2 data-i18n="nextContent">Tu próximo contenido</h2>
+<label for="topic" data-i18n="topic">Temática específica</label>
+<textarea id="topic" maxlength="180" placeholder="Ej.: consejos para empezar a entrenar fuerza sin gastar mucho"></textarea>
+<label for="audience" data-i18n="audience">¿A quién le hablás?</label>
+<input id="audience" maxlength="140" placeholder="Ej.: jóvenes que empiezan el gimnasio">
+<label for="platform" data-i18n="platform">Plataforma</label>
+<select id="platform">
+<option>TikTok</option><option>Instagram</option><option>YouTube</option>
+</select>
+<label for="goal" data-i18n="goal">Objetivo</label>
+<select id="goal">
+<option>Conseguir seguidores</option><option>Educar</option><option>Entretener</option><option>Conseguir clientes</option><option>Vender productos</option>
+</select>
+<label for="style" data-i18n="style">Estilo</label>
+<select id="style">
+<option>Variado y natural</option><option>Tutoriales prácticos</option><option>Retos y experimentos</option><option>Análisis y comparaciones</option><option>Historias y experiencias</option>
+</select>
+<label for="language" data-i18n="outputLanguage">Idioma del contenido</label>
+<select id="language">
+<option value="es">Español</option>
+<option value="en">English</option>
+</select>
+<button id="generate" data-i18n="generate" style="width:100%;margin-top:18px">✦ Generar</button>
+<button id="diagnoseHistory" class="secondary" type="button">Comprobar Supabase sin generar</button>
+<button id="qualityPreview" class="secondary" type="button" hidden>Prueba privada de calidad (no consume cupo)</button>
+<p class="small">No incluyas información privada. Revisá las afirmaciones antes de publicar. Esta versión de prueba tiene límites de uso por IP.</p>
+</section>
+
+<section class="panel">
+<h2 id="title" data-i18n="contentPack">Tu paquete de contenido</h2>
+<p id="status" role="status" aria-live="polite">Completá los datos y tocá Generar.</p>
+<div id="summary" class="summary" hidden></div>
+<div class="buttons no-print" id="actions" hidden>
+<button class="secondary" id="copy">Copiar todo</button>
+<button class="secondary" id="copyScripts">Copiar guiones</button>
+<button class="secondary" id="download">Descargar TXT</button>
+<button class="secondary" id="json">Guardar JSON</button>
+<button id="pdf">Guardar PDF</button>
+</div>
+<div class="tabs no-print" id="tabs" role="tablist" hidden></div>
+<div id="results" class="screen-only">
+<div class="empty muted">Tus resultados aparecerán acá. ✦</div>
+</div>
+<div id="printResults" class="print-only"></div>
+</section>
+</div>
+
+<section id="ayuda" class="legal-content no-print">
+ <h2 class="section-title" data-i18n="helpTitle">Preguntas frecuentes y transparencia</h2>
+ <details><summary data-i18n="faq1">¿Qué incluye cada paquete?</summary><p data-i18n="faq1Answer">15 ideas, 7 guiones cortos, 3 esquemas de videos largos, un calendario de 14 días y consejos. Revisá siempre el contenido antes de publicarlo.</p></details>
+ <details><summary data-i18n="faq2">¿Puedo pagar Pro ahora?</summary><p data-i18n="faq2Answer">Todavía no. La suscripción de US$9/mes es una propuesta y los cobros reales están deshabilitados en esta prueba.</p></details>
+ <details><summary data-i18n="faq3">¿Hay anuncios?</summary><p data-i18n="faq3Answer">En Free mostramos únicamente un espacio publicitario de prueba; no hay anuncios comerciales activos.</p></details>
+ <h2 class="section-title" data-i18n="privacyTitle">Privacidad, condiciones y contacto</h2>
+ <p class="legal-note" data-i18n="legalDraft">Información preliminar de una versión de prueba. Antes del lanzamiento publicaremos una política de privacidad y términos completos, y habilitaremos un canal oficial de contacto.</p>
+ <details><summary data-i18n="privacySummary">Privacidad · información preliminar</summary><p data-i18n="privacyBody">Usamos Supabase para la autenticación y para almacenar el historial de generaciones y los cupos. Los datos ingresados para generar contenido se envían al servicio de IA mediante nuestro servidor. Evitá incluir datos sensibles. Esta descripción no reemplaza una política de privacidad definitiva.</p></details>
+ <details><summary data-i18n="termsSummary">Condiciones · información preliminar</summary><p data-i18n="termsBody">El contenido es generado con IA y puede contener errores. Revisalo antes de publicarlo. Los planes y precios Pro aún son de prueba y no se procesan pagos. Las condiciones legales definitivas están pendientes de publicación.</p></details>
+ <details><summary data-i18n="contactSummary">Contacto</summary><p data-i18n="contactBody">El canal de soporte oficial está pendiente de habilitación. No ingreses datos de pago ni documentación personal en esta versión de prueba.</p></details>
+</section>
+<p class="footer">PromoKit Creator AI · Generación asistida por IA. El contenido requiere revisión humana. · V17 TEST</p>
+</main>
+<div id="toast" class="toast" hidden role="status"></div>
+
+<script>
+'use strict';
+
+const ENDPOINT='https://promokit-auth-prueba.santinomanzanelli11.workers.dev';
+const SUPABASE_URL='https://jlpbmyxpxkktodapunkn.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_bWuuKJdyxFNHrTIoXCtweg_-6TSMPBz';
+
+const $=id=>document.getElementById(id);
+
+const uiText={
+es:{dashboard:navHome:"Inicio",navPlans:"Planes",navAccount:"Mi cuenta",navGenerator:"Generador",navHelp:"Ayuda",heroTag:"TU ESTUDIO CREATIVO CON IA · VERSIÓN DE PRUEBA",heroStart:"Probar generador gratis",heroPlans:"Comparar planes",benefitsTitle:"Todo para crear más rápido",benefit1:"15 ideas para publicar",benefit1Desc:"Encontrá nuevos enfoques adaptados a tu temática.",benefit2:"7 guiones cortos",benefit2Desc:"Tené una base para grabar y personalizar.",benefit3:"Calendario de 14 días",benefit3Desc:"Organizá qué publicar y cuándo.",plansTitle:"Elegí cómo crear",freePlanDesc:"2 paquetes por mes, con espacio publicitario.",freePlanCta:"Crear cuenta gratis",perMonth:"/ mes (previsto)",proPlanDesc:"30 paquetes por mes, sin anuncios. Pagos todavía no habilitados.",proPlanCta:"Consultar disponibilidad",shortcutAccount:"Cuenta y cupos",shortcutHistory:"Historial",shortcutGenerator:"Crear contenido",helpTitle:"Preguntas frecuentes y transparencia",faq1:"¿Qué incluye cada paquete?",faq1Answer:"15 ideas, 7 guiones cortos, 3 esquemas de videos largos, un calendario de 14 días y consejos. Revisá siempre el contenido antes de publicarlo.",faq2:"¿Puedo pagar Pro ahora?",faq2Answer:"Todavía no. La suscripción de US$9/mes es una propuesta y los cobros reales están deshabilitados en esta prueba.",faq3:"¿Hay anuncios?",faq3Answer:"En Free mostramos únicamente un espacio publicitario de prueba; no hay anuncios comerciales activos.",privacyTitle:"Privacidad, condiciones y contacto",legalDraft:"Información preliminar de una versión de prueba. Antes del lanzamiento publicaremos una política de privacidad y términos completos, y habilitaremos un canal oficial de contacto.",privacySummary:"Privacidad · información preliminar",privacyBody:"Usamos Supabase para la autenticación y para almacenar el historial de generaciones y los cupos. Los datos ingresados para generar contenido se envían al servicio de IA mediante nuestro servidor. Evitá incluir datos sensibles. Esta descripción no reemplaza una política de privacidad definitiva.",termsSummary:"Condiciones · información preliminar",termsBody:"El contenido es generado con IA y puede contener errores. Revisalo antes de publicarlo. Los planes y precios Pro aún son de prueba y no se procesan pagos. Las condiciones legales definitivas están pendientes de publicación.",contactSummary:"Contacto",contactBody:"El canal de soporte oficial está pendiente de habilitación. No ingreses datos de pago ni documentación personal en esta versión de prueba.",'Mi panel',currentPlan:'Plan actual',remaining:'Paquetes disponibles',saved:'Paquetes en historial (últimos 15)',renewal:'Los cupos se renuevan cada mes calendario. Los pagos aún no están habilitados.',hero:'Creá contenido que suene a vos.',intro:'Ideas, guiones listos para grabar y un plan de publicación adaptado a tu audiencia.',account:'Tu cuenta PromoKit',history:'Historial de generaciones · V17',nextContent:'Tu próximo contenido',contentPack:'Tu paquete de contenido',topic:'Temática específica',audience:'¿A quién le hablás?',platform:'Plataforma',goal:'Objetivo',style:'Estilo',outputLanguage:'Idioma del contenido',generate:'✦ Generar',refreshQuota:'Actualizar contador',refreshHistory:'Actualizar historial',signUp:'Crear cuenta',signIn:'Iniciar sesión',signOut:'Cerrar sesión',email:'Correo electrónico',password:'Contraseña'},
+en:{dashboard:navHome:"Home",navPlans:"Plans",navAccount:"My account",navGenerator:"Generator",navHelp:"Help",heroTag:"YOUR AI CONTENT STUDIO · TEST VERSION",heroStart:"Try the free generator",heroPlans:"Compare plans",benefitsTitle:"Everything to create faster",benefit1:"15 content ideas",benefit1Desc:"Discover fresh angles for your topic.",benefit2:"7 short scripts",benefit2Desc:"Get a starting point to record and customize.",benefit3:"14-day calendar",benefit3Desc:"Plan what to post and when.",plansTitle:"Choose your plan",freePlanDesc:"2 packages per month, with an ad placeholder.",freePlanCta:"Create free account",perMonth:"/ month (planned)",proPlanDesc:"30 packages per month, no ads. Payments are not enabled yet.",proPlanCta:"Check availability",shortcutAccount:"Account and quota",shortcutHistory:"History",shortcutGenerator:"Create content",helpTitle:"FAQs and transparency",faq1:"What does each package include?",faq1Answer:"15 ideas, 7 short scripts, 3 long-video outlines, a 14-day calendar and tips. Always review before publishing.",faq2:"Can I pay for Pro now?",faq2Answer:"Not yet. The USD 9/month subscription is planned and real payments are disabled in this test.",faq3:"Are there ads?",faq3Answer:"Free currently shows only an ad placeholder; no commercial ads are running.",privacyTitle:"Privacy, terms and contact",legalDraft:"Preliminary information for a test version. We will publish full privacy and terms policies and an official contact channel before launch.",privacySummary:"Privacy · preliminary information",privacyBody:"We use Supabase for authentication, generation history and quotas. Generation inputs are sent to the AI service through our server. Do not include sensitive data. This does not replace a full privacy policy.",termsSummary:"Terms · preliminary information",termsBody:"AI-generated content may contain errors. Review before publishing. Pro plans and pricing are still in testing and payments are not processed. Final legal terms are pending.",contactSummary:"Contact",contactBody:"An official support channel is not available yet. Do not enter payment details or personal documents in this test version.",'My dashboard',currentPlan:'Current plan',remaining:'Available packages',saved:'Saved packages (latest 15)',renewal:'Package allowances reset each calendar month. Payments are not enabled yet.',hero:'Create content that sounds like you.',intro:'Ideas, ready-to-record scripts and a publishing plan tailored to your audience.',account:'Your PromoKit account',history:'Generation history · V17',nextContent:'Your next content',contentPack:'Your content package',topic:'Specific topic',audience:'Who is your audience?',platform:'Platform',goal:'Goal',style:'Style',outputLanguage:'Content language',generate:'✦ Generate',refreshQuota:'Refresh allowance',refreshHistory:'Refresh history',signUp:'Create account',signIn:'Sign in',signOut:'Sign out',email:'Email',password:'Password'}
+};
+let uiLanguage='es';
+try{uiLanguage=localStorage.getItem('promokit-ui-language')==='en'?'en':'es';}catch{}
+function applyUiLanguage(){
+ document.documentElement.lang=uiLanguage;
+ document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(uiText[uiLanguage][k])el.textContent=uiText[uiLanguage][k];});
+ $('langSwitch').textContent=uiLanguage==='es'?'English':'Español';
+ $('langSwitch').setAttribute('aria-label',uiLanguage==='es'?'Switch to English':'Cambiar a español');
+}
+$('langSwitch').onclick=()=>{
+ uiLanguage=uiLanguage==='es'?'en':'es';
+ try{localStorage.setItem('promokit-ui-language',uiLanguage);}catch{}
+ applyUiLanguage();
+ if(supabaseClient)refreshQuota();
+};
+applyUiLanguage();
+
+const keys=['topic','audience','platform','goal','style','language'];
+const names={
+ideas:'Ideas',
+scripts:'Guiones',
+longVideos:'Videos largos',
+calendar:'Calendario',
+tips:'Consejos'
+};
+
+let pack=null;
+let tab='ideas';
+let supabaseClient=null;
+let toastTimer;
+
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({
+'&':'&amp;',
+'<':'&lt;',
+'>':'&gt;',
+'"':'&quot;',
+"'":'&#39;'
+}[c]));
+
+const plain=v=>typeof v==='string'?v:JSON.stringify(v??'');
+
+function notice(s){
+const el=$('toast');
+el.textContent=s;
+el.hidden=false;
+clearTimeout(toastTimer);
+toastTimer=setTimeout(()=>el.hidden=true,2600);
+}
+
+function setStatus(s,type=''){
+const el=$('status');
+el.textContent=s;
+el.className=type;
+}
+
+function setAuthStatus(s,type=''){
+const el=$('authStatus');
+el.textContent=s;
+el.className='small '+type;
+}
+
+function scriptText(v){
+return [
+v.title,
+'Gancho: '+(v.hook||''),
+'Narración: '+(v.narration||''),
+'Cierre: '+(v.cta||''),
+'Cómo grabarlo: '+(v.visual||'')
+].join('\n\n');
+}
+
+function cards(k,print=false){
+const arr=Array.isArray(pack?.[k])?pack[k]:[];
+if(!arr.length)return '<p class="muted">Sin contenido para esta sección.</p>';
+return arr.map((v,i)=>{
+if(k==='ideas')return `<article class="result"><h3>${i+1}. ${esc(v.title)}</h3><p>${esc(v.format)}</p></article>`;
+if(k==='scripts')return `<article class="result"><h3>${i+1}. ${esc(v.title)}</h3><p><b>Gancho:</b> ${esc(v.hook)}</p><p><b>Narración:</b> ${esc(v.narration)}</p><p><b>Cierre:</b> ${esc(v.cta)}</p><p class="small"><b>Cómo grabarlo:</b> ${esc(v.visual)}</p>${print?'':`<button class="secondary copy-script no-print" data-script="${i}">Copiar este guion</button>`}</article>`;
+if(k==='longVideos')return `<article class="result"><h3>${i+1}. ${esc(v.title)}</h3><p>${(Array.isArray(v.outline)?v.outline:[]).map(esc).join(' · ')}</p></article>`;
+if(k==='calendar')return `<article class="result"><h3>Día ${esc(v.day)} · ${esc(v.action)}</h3><p>${esc(v.content)}</p></article>`;
+return `<article class="result">${esc(v)}</article>`;
+}).join('');
+}
+
+function render(){
+if(!pack)return;
+$('tabs').innerHTML=Object.entries(names).map(([k,n])=>`<button role="tab" aria-selected="${k===tab}" class="secondary ${k===tab?'active':''}" data-tab="${k}">${n}</button>`).join('');
+$('results').innerHTML=cards(tab);
+$('printResults').innerHTML='<h1>PromoKit Creator AI · Tu paquete</h1>'+Object.entries(names).map(([k,n])=>`<h2>${n}</h2>${cards(k,true)}`).join('');
+$('summary').innerHTML=[
+['ideas','Ideas'],
+['scripts','Guiones'],
+['longVideos','Videos largos'],
+['calendar','Días']
+].map(([k,n])=>`<div class="stat"><strong>${Array.isArray(pack[k])?pack[k].length:0}</strong><span>${n}</span></div>`).join('');
+$('summary').hidden=false;
+$('actions').hidden=false;
+$('tabs').hidden=false;
+}
+
+function allText(){
+return Object.entries(names).map(([k,n])=>n.toUpperCase()+'\n\n'+(pack?.[k]||[]).map((v,i)=>`${i+1}. `+(k==='scripts'?scriptText(v):k==='ideas'?`${v.title} (${v.format})`:k==='longVideos'?`${v.title}\n${(v.outline||[]).join('\n')}`:k==='calendar'?`Día ${v.day}: ${v.action} — ${v.content}`:plain(v))).join('\n\n')).join('\n\n──────────────\n\n');
+}
+
+async function copyText(s){
+try{
+await navigator.clipboard.writeText(s);
+notice('¡Copiado!');
+}catch{
+notice('No se pudo copiar. Probá Descargar TXT.');
+}
+}
+
+function save(content,name,type){
+const a=document.createElement('a');
+const url=URL.createObjectURL(new Blob([content],{type}));
+a.href=url;
+a.download=name;
+document.body.appendChild(a);
+a.click();
+a.remove();
+setTimeout(()=>URL.revokeObjectURL(url),10000);
+}
+
+$('tabs').addEventListener('click',e=>{
+const b=e.target.closest('[data-tab]');
+if(b){tab=b.dataset.tab;render();}
+});
+
+$('results').addEventListener('click',e=>{
+const b=e.target.closest('[data-script]');
+if(b&&pack?.scripts?.[Number(b.dataset.script)]){
+copyText(scriptText(pack.scripts[Number(b.dataset.script)]));
+}
+});
+
+$('copy').onclick=()=>pack&&copyText(allText());
+$('copyScripts').onclick=()=>pack&&copyText((pack.scripts||[]).map(scriptText).join('\n\n──────────────\n\n'));
+$('download').onclick=()=>pack&&save(allText(),'PromoKit_V17.txt','text/plain;charset=utf-8');
+$('json').onclick=()=>pack&&save(JSON.stringify(pack,null,2),'PromoKit_V17.json','application/json;charset=utf-8');
+$('pdf').onclick=()=>pack&&window.print();
+
+try{
+const saved=JSON.parse(localStorage.getItem('promokit-v15-form')||'{}');
+for(const k of keys){
+if(typeof saved[k]==='string'&&(k==='topic'||k==='audience'||Array.from($(k).options||[]).some(o=>o.value===saved[k]))){
+$(k).value=saved[k];
+}
+}
+}catch{}
+
+function persist(){
+try{
+localStorage.setItem('promokit-v15-form',JSON.stringify(Object.fromEntries(keys.map(k=>[k,$(k).value]))));
+}catch{}
+}
+
+for(const k of keys)$(k).addEventListener('change',persist);
+$('topic').addEventListener('input',persist);
+$('audience').addEventListener('input',persist);
+
+let quotaRequestId=0;
+function showFreeAdPreview(show){$('freeAdPreview').hidden=!show;}
+async function refreshQuota(){
+ const requestId=++quotaRequestId;
+ showFreeAdPreview(false);
+ const panel=$('quotaPanel');
+ if(!panel||!supabaseClient)return;
+ try{
+  const session=(await supabaseClient.auth.getSession()).data?.session;
+  if(!session){$('quotaHeading').textContent='Iniciá sesión para consultar tu plan.';return;}
+  const response=await fetch(ENDPOINT+'/quota',{method:'POST',headers:{Authorization:'Bearer '+session.access_token}});
+  const data=await response.json();
+  if(!response.ok||!data.quota)throw Error(data.error||'No disponible');
+  if(requestId!==quotaRequestId)return;
+  const currentSession=(await supabaseClient.auth.getSession()).data?.session;
+  if(currentSession?.user?.id!==session.user.id)return;
+  const q=data.quota;
+  $('dashboard').hidden=false;
+  $('dashPlan').textContent=q.plan==='pro'?'Pro':'Free';
+  $('dashRemaining').textContent=String(q.remaining);
+  showFreeAdPreview(q.plan==='free');
+  $('qualityPreview').hidden=!q.qualityPreviewEnabled;
+  $('quotaHeading').textContent=uiLanguage==='en'?'Plan '+(q.plan==='pro'?'Pro':'Free')+' · '+q.used+' of '+q.limit+' packages used':'Plan '+(q.plan==='pro'?'Pro':'Free')+' · '+q.used+' de '+q.limit+' paquetes usados';
+  $('quotaText').textContent=uiLanguage==='en'?(q.remaining===0?'You reached your monthly limit. Your allowance resets next month.':'You have '+q.remaining+' package(s) left this month.'):(q.remaining===0?'Llegaste al límite de este mes. Tu cupo se renueva el mes próximo.':'Te quedan '+q.remaining+' paquete'+(q.remaining===1?'':'s')+' este mes.');
+  const meter=$('quotaMeter');
+  meter.setAttribute('aria-valuemax',String(q.limit));
+  meter.setAttribute('aria-valuenow',String(q.used));
+  $('quotaFill').style.width=Math.min(100,100*q.used/q.limit)+'%';
+ }catch(e){
+  if(requestId!==quotaRequestId)return;
+  showFreeAdPreview(false);
+  $('dashboard').hidden=true;
+  $('quotaHeading').textContent='No se pudo cargar el contador.';
+  $('quotaText').textContent='Tocá «Actualizar contador» para reintentar.';
+ }
+}
+$('refreshQuota').onclick=refreshQuota;
+
+function showSession(session){
+quotaRequestId++;
+showFreeAdPreview(false);
+$('dashboard').hidden=true;
+$('dashPlan').textContent='—';
+$('dashRemaining').textContent='—';
+$('dashHistory').textContent='—';
+const logged=!!session?.user;
+$('authLoggedOut').hidden=logged;
+$('authLoggedIn').hidden=!logged;
+$('accountEmail').textContent=logged?(session.user.email||'Usuario'):'';
+setAuthStatus(logged?'Sesión iniciada correctamente.':'Podés registrarte o iniciar sesión.',logged?'success':'');
+if(logged)setTimeout(refreshQuota,0);
+}
+
+function authBusy(busy){
+$('signUp').disabled=busy;
+$('signIn').disabled=busy;
+$('signOut').disabled=busy;
+}
+
+function authError(e){
+const m=String(e?.message||'Error desconocido');
+if(/invalid login credentials/i.test(m))return'Correo o contraseña incorrectos.';
+if(/email not confirmed/i.test(m))return'Primero confirmá tu correo desde el enlace que recibiste.';
+if(/user already registered/i.test(m))return'Ya existe una cuenta con ese correo.';
+if(/password should be/i.test(m))return'La contraseña no cumple los requisitos de seguridad.';
+if(/rate limit/i.test(m))return'Demasiados intentos. Probá más tarde.';
+return m;
+}
+
+function credentials(){
+const email=$('authEmail').value.trim();
+const password=$('authPassword').value;
+if(!email||!email.includes('@'))throw Error('Escribí un correo válido.');
+if(password.length<8)throw Error('La contraseña debe tener al menos 8 caracteres.');
+return {email,password};
+}
+
+$('signUp').onclick=async()=>{
+if(!supabaseClient)return setAuthStatus('Falta configurar Supabase.','error');
+authBusy(true);
+try{
+const {email,password}=credentials();
+const {data,error}=await supabaseClient.auth.signUp({
+email,
+password,
+options:{emailRedirectTo:location.origin+location.pathname}
+});
+if(error)throw error;
+if(data.session){
+showSession(data.session);
+}else{
+setAuthStatus('Revisá tu correo y confirmá la cuenta. Si ya tenías una cuenta, probá iniciar sesión.','success');
+}
+}catch(e){
+setAuthStatus(authError(e),'error');
+}finally{
+authBusy(false);
+}
+};
+
+$('signIn').onclick=async()=>{
+if(!supabaseClient)return setAuthStatus('Falta configurar Supabase.','error');
+authBusy(true);
+try{
+const {email,password}=credentials();
+const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+if(error)throw error;
+showSession(data.session);
+await refreshHistory();
+$('authPassword').value='';
+}catch(e){
+setAuthStatus(authError(e),'error');
+}finally{
+authBusy(false);
+}
+};
+
+$('signOut').onclick=async()=>{
+if(!supabaseClient)return;
+authBusy(true);
+try{
+const {error}=await supabaseClient.auth.signOut();
+if(error)throw error;
+showSession(null);
+await refreshHistory();
+}catch(e){
+setAuthStatus(authError(e),'error');
+}finally{
+authBusy(false);
+}
+};
+
+async function initAuth(){
+if(!window.supabase?.createClient){
+setAuthStatus('No se pudo cargar la biblioteca de Supabase. Revisá tu conexión.','error');
+return;
+}
+try{
+supabaseClient=window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_PUBLISHABLE_KEY,
+{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
+);
+const {data,error}=await supabaseClient.auth.getSession();
+if(error)throw error;
+showSession(data.session);
+await refreshHistory();
+supabaseClient.auth.onAuthStateChange((_event,session)=>{
+showSession(session);
+setTimeout(refreshHistory,0);
+});
+}catch(e){
+setAuthStatus('No se pudo iniciar Supabase: '+authError(e),'error');
+}
+}
+
+window.addEventListener('load',initAuth);
+
+async function refreshHistory(){
+const area=$('historyList');
+if(!area||!supabaseClient)return;
+const {data:sessionData}=await supabaseClient.auth.getSession();
+const session=sessionData?.session;
+if(!session){$('dashHistory').textContent='—';area.textContent='Iniciá sesión para ver tus generaciones anteriores.';return;}
+const {data,error}=await supabaseClient.from('generation_history')
+.select('id,topic,platform,created_at,pack')
+.eq('user_id',session.user.id).order('created_at',{ascending:false}).limit(15);
+if(error){$('dashHistory').textContent='—';area.textContent='No se pudo cargar el historial: '+error.message;return;}
+$('dashHistory').textContent=data?.length===15?'15+':String(data?.length||0);
+if(!data?.length){area.textContent='Todavía no hay generaciones guardadas.';return;}
+area.innerHTML='';
+for(const item of data){
+const entry=document.createElement('article');
+entry.className='result';
+const title=document.createElement('h3');
+title.textContent=item.topic||'Generación sin título';
+const info=document.createElement('p');
+info.className='small';
+info.textContent=[item.platform,new Date(item.created_at).toLocaleString()].filter(Boolean).join(' · ');
+const button=document.createElement('button');
+button.className='secondary';
+button.textContent='Ver paquete guardado';
+button.onclick=()=>{pack=item.pack;tab='ideas';render();setStatus('Paquete recuperado del historial.','success');window.scrollTo({top:0,behavior:'smooth'});};
+entry.append(title,info,button);area.append(entry);
+}
+}
+$('refreshHistory').onclick=refreshHistory;
+
+
+$('diagnoseHistory').onclick=async()=>{
+ const b=$('diagnoseHistory');b.disabled=true;
+ try{
+  const session=(await supabaseClient.auth.getSession()).data?.session;
+  if(!session){setStatus('Iniciá sesión primero.','error');return;}
+  const response=await fetch(ENDPOINT+'/diagnose-history',{method:'POST',headers:{'Authorization':'Bearer '+session.access_token}});
+  const data=await response.json();
+  setStatus('Diagnóstico: '+JSON.stringify(data.diagnostic||{error:data.error,status:response.status}),response.ok?'success':'error');
+ }catch(e){setStatus('Diagnóstico fallido: '+String(e.message||e),'error');}
+ finally{b.disabled=false;}
+};
+$('qualityPreview').onclick=()=>generateContent(true);
+$('generate').onclick=()=>generateContent(false);
+async function generateContent(preview=false){
+const payload=Object.fromEntries(keys.map(k=>[k,$(k).value.trim()]));
+if(payload.topic.length<3){
+setStatus('Escribí una temática específica (al menos 3 caracteres).','error');
+$('topic').focus();
+return;
+}
+if(!supabaseClient){setStatus('Supabase todavía no está listo.','error');return;}
+const {data:sessionData,error:sessionError}=await supabaseClient.auth.getSession();
+if(sessionError||!sessionData?.session?.access_token){
+setStatus('Primero iniciá sesión para probar el historial.','error');
+return;
+}
+const session=sessionData.session;
+persist();
+const b=preview?$('qualityPreview'):$('generate');
+b.disabled=true;
+b.innerHTML='<span class="spinner"></span>Generando…';
+setStatus('Preparando tus ideas, guiones y calendario. Puede tardar unos segundos…');
+try{
+const ctrl=new AbortController();
+const timer=setTimeout(()=>ctrl.abort(),90000);
+let response;
+try{
+response=await fetch(ENDPOINT+(preview?'/quality-preview':''),{
+method:'POST',
+headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
+body:JSON.stringify(payload),
+signal:ctrl.signal
+});
+}finally{
+clearTimeout(timer);
+}
+let data;
+try{
+data=await response.json();
+}catch{
+throw Error('El servidor devolvió una respuesta que no pudimos leer.');
+}
+if(!response.ok){
+const diagnostic=data.diagnostic;
+const details=diagnostic?.stage==='history_save'
+  ? ' (Supabase HTTP '+String(diagnostic.httpStatus||'unknown')+', código '+String(diagnostic.dbCode||'unknown')+')'
+  : '';
+throw Error((data.error||'Error '+response.status)+details);
+}
+if(!data.pack||!Array.isArray(data.pack.ideas)||!Array.isArray(data.pack.scripts)||!Array.isArray(data.pack.calendar)){
+throw Error('El contenido llegó incompleto. Probá otra vez.');
+}
+pack=data.pack;
+tab='ideas';
+render();
+setStatus(data.qualityPreview?'Prueba privada generada. No consume cupo ni se guarda en el historial. Revisá los datos antes de publicar.':data.historySaved?'Contenido generado y guardado en tu historial. Revisá los datos antes de publicar.':'Contenido generado, pero no se confirmó el guardado.','success');
+await refreshHistory();
+await refreshQuota();
+if(pack.ideas.length!==15||pack.scripts.length!==7||pack.calendar.length!==14){
+notice('Generación parcial: revisá las cantidades.');
+}
+}catch(e){
+setStatus('No se pudo generar: '+(
+e.name==='AbortError'?'La solicitud tardó demasiado. Probá otra vez.':
+e.message==='Failed to fetch'?'Revisá tu conexión y volvé a intentar.':
+e.message
+),'error');
+await refreshQuota();
+}finally{
+b.disabled=false;
+b.textContent=preview?'Prueba privada de calidad (no consume cupo)':'✦ Generar';
+}
+}
+</script>
+</body>
+</html>
