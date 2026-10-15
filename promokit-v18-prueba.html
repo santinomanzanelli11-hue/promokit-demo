@@ -752,6 +752,14 @@ setStatus('Primero iniciá sesión para probar el historial.','error');
 return;
 }
 const session=sessionData.session;
+if(!preview){
+ let pending=null;
+ try{pending=JSON.parse(localStorage.getItem(pendingKey)||'null');}catch{localStorage.removeItem(pendingKey);}
+ if(pending&&pending.userId===session.user.id){
+  setStatus('Tenés una solicitud anterior pendiente. Usá «Recuperar solicitud» antes de crear otra para evitar gastar un cupo adicional.','error');
+  return;
+ }
+}
 const requestId=preview?null:crypto.randomUUID();
 if(requestId)localStorage.setItem(pendingKey,JSON.stringify({requestId,userId:session.user.id,createdAt:Date.now()}));
 persist();
