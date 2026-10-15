@@ -502,7 +502,13 @@ data=await response.json();
 }catch{
 throw Error('El servidor devolvió una respuesta que no pudimos leer.');
 }
-if(!response.ok)throw Error(data.error||'Error '+response.status);
+if(!response.ok){
+const diagnostic=data.diagnostic;
+const details=diagnostic?.stage==='history_save'
+  ? ' (Supabase HTTP '+String(diagnostic.httpStatus||'unknown')+', código '+String(diagnostic.dbCode||'unknown')+')'
+  : '';
+throw Error((data.error||'Error '+response.status)+details);
+}
 if(!data.pack||!Array.isArray(data.pack.ideas)||!Array.isArray(data.pack.scripts)||!Array.isArray(data.pack.calendar)){
 throw Error('El contenido llegó incompleto. Probá otra vez.');
 }
