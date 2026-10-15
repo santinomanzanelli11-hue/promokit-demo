@@ -12,6 +12,7 @@
 body{margin:0;background:#0b1020;color:#f1f5ff}
 header{border-bottom:1px solid #29334d;padding:18px max(18px,calc((100vw - 1150px)/2));display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 header b,.accent{color:#80e3c0}
+.header-tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.lang-switch{background:#293653;color:#eaf1ff;padding:8px 11px;font-size:13px}.dashboard{margin-top:18px}.dash-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.dash-stat{padding:16px;background:#101629;border:1px solid #394767;border-radius:14px}.dash-stat strong{display:block;font-size:22px;color:#87e4c1}.dash-stat span{font-size:12px;color:#bac5df}@media(max-width:540px){.dash-grid{grid-template-columns:1fr}}
 .tag{font-size:12px;color:#80e3c0;border:1px solid #376b63;padding:7px 10px;border-radius:20px}
 main{max-width:1150px;margin:auto;padding:30px 16px 80px}
 h1{font-size:clamp(29px,5vw,48px);margin:10px 0}
@@ -87,29 +88,29 @@ h1{display:none}
 <body>
 <header>
 <strong>✦ PromoKit <b>Creator</b></strong>
-<span class="tag">STUDIO V16 · HISTORIAL EN PRUEBA</span>
+<div class="header-tools"><span class="tag">STUDIO V16 · TEST</span><button type="button" id="langSwitch" class="lang-switch" aria-label="Switch interface language">English</button></div>
 </header>
 <main>
-<h1>Creá contenido que <span class="accent">suene a vos.</span></h1>
-<p>Ideas, guiones listos para grabar y un plan de publicación adaptado a tu audiencia.</p>
+<h1 data-i18n="hero">Creá contenido que suene a vos.</h1>
+<p data-i18n="intro">Ideas, guiones listos para grabar y un plan de publicación adaptado a tu audiencia.</p>
 
 <section class="panel auth-panel no-print">
-<h2>Tu cuenta PromoKit</h2>
+<h2 data-i18n="account">Tu cuenta PromoKit</h2>
 <div id="authLoggedOut">
 <p class="small">Registrate gratis o iniciá sesión para probar el sistema de cuentas.</p>
 <div class="auth-grid">
 <div>
-<label for="authEmail">Correo electrónico</label>
+<label for="authEmail" data-i18n="email">Correo electrónico</label>
 <input id="authEmail" type="email" autocomplete="email" placeholder="tu@email.com" maxlength="254">
 </div>
 <div>
-<label for="authPassword">Contraseña</label>
+<label for="authPassword" data-i18n="password">Contraseña</label>
 <input id="authPassword" type="password" autocomplete="current-password" placeholder="Mínimo 8 caracteres" minlength="8">
 </div>
 </div>
 <div class="auth-actions">
-<button id="signUp">Crear cuenta</button>
-<button class="secondary" id="signIn">Iniciar sesión</button>
+<button id="signUp" data-i18n="signUp">Crear cuenta</button>
+<button class="secondary" id="signIn" data-i18n="signIn">Iniciar sesión</button>
 </div>
 </div>
 <div id="authLoggedIn" hidden>
@@ -118,56 +119,57 @@ h1{display:none}
 <strong id="quotaHeading">Consultando tu plan…</strong>
 <div class="quota-meter" role="progressbar" aria-label="Paquetes utilizados" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0" id="quotaMeter"><div class="quota-fill" id="quotaFill"></div></div>
 <p class="small" id="quotaText">Cargando tu contador mensual.</p>
-<button class="secondary" type="button" id="refreshQuota">Actualizar contador</button>
+<button class="secondary" type="button" id="refreshQuota" data-i18n="refreshQuota">Actualizar contador</button>
 <div class="quota-benefits">
 <div><strong>Free · Gratis</strong><p class="small">2 paquetes completos por mes.</p></div>
 <div><strong>Pro · Próximamente</strong><p class="small">30 paquetes por mes. Precio previsto: US$9/mes. Todavía no hay pagos habilitados.</p></div>
 </div>
 </div>
-<button class="secondary" id="signOut">Cerrar sesión</button>
+<button class="secondary" id="signOut" data-i18n="signOut">Cerrar sesión</button>
 </div>
 <p id="authStatus" role="status" aria-live="polite" class="small">Preparando inicio de sesión…</p>
 </section>
 
+<section class="panel dashboard no-print" id="dashboard" hidden><h2 data-i18n="dashboard">Mi panel</h2><div class="dash-grid"><div class="dash-stat"><strong id="dashPlan">—</strong><span data-i18n="currentPlan">Plan actual</span></div><div class="dash-stat"><strong id="dashRemaining">—</strong><span data-i18n="remaining">Paquetes disponibles</span></div><div class="dash-stat"><strong id="dashHistory">—</strong><span data-i18n="saved">Paquetes en historial (últimos 15)</span></div></div><p class="small" id="dashRenewal" data-i18n="renewal">Los cupos se renuevan cada mes calendario. La suscripción todavía no está habilitada.</p></section>
 <section class="panel no-print" style="margin-top:18px">
-<h2>Historial de generaciones · V16</h2>
+<h2 data-i18n="history">Historial de generaciones · V16</h2>
 <p class="small">Tus paquetes guardados. El historial se consulta desde tu cuenta de Supabase.</p>
-<button id="refreshHistory" class="secondary" type="button">Actualizar historial</button>
+<button id="refreshHistory" class="secondary" type="button" data-i18n="refreshHistory">Actualizar historial</button>
 <div id="historyList" style="margin-top:14px">Iniciá sesión para ver tu historial.</div>
 </section>
 <aside id="freeAdPreview" class="ad-preview no-print" aria-label="Espacio publicitario de prueba" hidden><span class="ad-label">Espacio publicitario · Vista previa</span><strong>PromoKit Free con publicidad</strong><p class="small">Aquí aparecerá un anuncio cuando habilitemos una red publicitaria. Por ahora no se muestra publicidad real.</p></aside>
 <div class="layout">
 <section class="panel form-panel">
-<h2>Tu próximo contenido</h2>
-<label for="topic">Temática específica</label>
+<h2 data-i18n="nextContent">Tu próximo contenido</h2>
+<label for="topic" data-i18n="topic">Temática específica</label>
 <textarea id="topic" maxlength="180" placeholder="Ej.: consejos para empezar a entrenar fuerza sin gastar mucho"></textarea>
-<label for="audience">¿A quién le hablás?</label>
+<label for="audience" data-i18n="audience">¿A quién le hablás?</label>
 <input id="audience" maxlength="140" placeholder="Ej.: jóvenes que empiezan el gimnasio">
-<label for="platform">Plataforma</label>
+<label for="platform" data-i18n="platform">Plataforma</label>
 <select id="platform">
 <option>TikTok</option><option>Instagram</option><option>YouTube</option>
 </select>
-<label for="goal">Objetivo</label>
+<label for="goal" data-i18n="goal">Objetivo</label>
 <select id="goal">
 <option>Conseguir seguidores</option><option>Educar</option><option>Entretener</option><option>Conseguir clientes</option><option>Vender productos</option>
 </select>
-<label for="style">Estilo</label>
+<label for="style" data-i18n="style">Estilo</label>
 <select id="style">
 <option>Variado y natural</option><option>Tutoriales prácticos</option><option>Retos y experimentos</option><option>Análisis y comparaciones</option><option>Historias y experiencias</option>
 </select>
-<label for="language">Idioma</label>
+<label for="language" data-i18n="outputLanguage">Idioma del contenido</label>
 <select id="language">
 <option value="es">Español</option>
 <option value="en">English</option>
 </select>
-<button id="generate" style="width:100%;margin-top:18px">✦ Generar</button>
+<button id="generate" data-i18n="generate" style="width:100%;margin-top:18px">✦ Generar</button>
 <button id="diagnoseHistory" class="secondary" type="button">Comprobar Supabase sin generar</button>
 <button id="qualityPreview" class="secondary" type="button" hidden>Prueba privada de calidad (no consume cupo)</button>
 <p class="small">No incluyas información privada. Revisá las afirmaciones antes de publicar. Esta versión de prueba tiene límites de uso por IP.</p>
 </section>
 
 <section class="panel">
-<h2 id="title">Tu paquete de contenido</h2>
+<h2 id="title" data-i18n="contentPack">Tu paquete de contenido</h2>
 <p id="status" role="status" aria-live="polite">Completá los datos y tocá Generar.</p>
 <div id="summary" class="summary" hidden></div>
 <div class="buttons no-print" id="actions" hidden>
@@ -196,6 +198,27 @@ const SUPABASE_URL='https://jlpbmyxpxkktodapunkn.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_bWuuKJdyxFNHrTIoXCtweg_-6TSMPBz';
 
 const $=id=>document.getElementById(id);
+
+const uiText={
+es:{dashboard:'Mi panel',currentPlan:'Plan actual',remaining:'Paquetes disponibles',saved:'Paquetes en historial (últimos 15)',renewal:'Los cupos se renuevan cada mes calendario. Los pagos aún no están habilitados.',hero:'Creá contenido que suene a vos.',intro:'Ideas, guiones listos para grabar y un plan de publicación adaptado a tu audiencia.',account:'Tu cuenta PromoKit',history:'Historial de generaciones · V16',nextContent:'Tu próximo contenido',contentPack:'Tu paquete de contenido',topic:'Temática específica',audience:'¿A quién le hablás?',platform:'Plataforma',goal:'Objetivo',style:'Estilo',outputLanguage:'Idioma del contenido',generate:'✦ Generar',refreshQuota:'Actualizar contador',refreshHistory:'Actualizar historial',signUp:'Crear cuenta',signIn:'Iniciar sesión',signOut:'Cerrar sesión',email:'Correo electrónico',password:'Contraseña'},
+en:{dashboard:'My dashboard',currentPlan:'Current plan',remaining:'Available packages',saved:'Saved packages (latest 15)',renewal:'Package allowances reset each calendar month. Payments are not enabled yet.',hero:'Create content that sounds like you.',intro:'Ideas, ready-to-record scripts and a publishing plan tailored to your audience.',account:'Your PromoKit account',history:'Generation history · V16',nextContent:'Your next content',contentPack:'Your content package',topic:'Specific topic',audience:'Who is your audience?',platform:'Platform',goal:'Goal',style:'Style',outputLanguage:'Content language',generate:'✦ Generate',refreshQuota:'Refresh allowance',refreshHistory:'Refresh history',signUp:'Create account',signIn:'Sign in',signOut:'Sign out',email:'Email',password:'Password'}
+};
+let uiLanguage='es';
+try{uiLanguage=localStorage.getItem('promokit-ui-language')==='en'?'en':'es';}catch{}
+function applyUiLanguage(){
+ document.documentElement.lang=uiLanguage;
+ document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(uiText[uiLanguage][k])el.textContent=uiText[uiLanguage][k];});
+ $('langSwitch').textContent=uiLanguage==='es'?'English':'Español';
+ $('langSwitch').setAttribute('aria-label',uiLanguage==='es'?'Switch to English':'Cambiar a español');
+}
+$('langSwitch').onclick=()=>{
+ uiLanguage=uiLanguage==='es'?'en':'es';
+ try{localStorage.setItem('promokit-ui-language',uiLanguage);}catch{}
+ applyUiLanguage();
+ if(supabaseClient)refreshQuota();
+};
+applyUiLanguage();
+
 const keys=['topic','audience','platform','goal','style','language'];
 const names={
 ideas:'Ideas',
@@ -356,11 +379,13 @@ async function refreshQuota(){
   const currentSession=(await supabaseClient.auth.getSession()).data?.session;
   if(currentSession?.user?.id!==session.user.id)return;
   const q=data.quota;
+  $('dashboard').hidden=false;
+  $('dashPlan').textContent=q.plan==='pro'?'Pro':'Free';
+  $('dashRemaining').textContent=String(q.remaining);
   showFreeAdPreview(q.plan==='free');
   $('qualityPreview').hidden=!q.qualityPreviewEnabled;
-  $('quotaHeading').textContent='Plan '+(q.plan==='pro'?'Pro':'Free')+' · '+q.used+' de '+q.limit+' paquetes usados';
-  $('quotaText').textContent=q.remaining===0?'Llegaste al límite de este mes. Tu cupo se renueva el mes próximo.':
-    'Te quedan '+q.remaining+' paquete'+(q.remaining===1?'':'s')+' este mes.';
+  $('quotaHeading').textContent=uiLanguage==='en'?'Plan '+(q.plan==='pro'?'Pro':'Free')+' · '+q.used+' of '+q.limit+' packages used':'Plan '+(q.plan==='pro'?'Pro':'Free')+' · '+q.used+' de '+q.limit+' paquetes usados';
+  $('quotaText').textContent=uiLanguage==='en'?(q.remaining===0?'You reached your monthly limit. Your allowance resets next month.':'You have '+q.remaining+' package(s) left this month.'):(q.remaining===0?'Llegaste al límite de este mes. Tu cupo se renueva el mes próximo.':'Te quedan '+q.remaining+' paquete'+(q.remaining===1?'':'s')+' este mes.');
   const meter=$('quotaMeter');
   meter.setAttribute('aria-valuemax',String(q.limit));
   meter.setAttribute('aria-valuenow',String(q.used));
@@ -368,6 +393,7 @@ async function refreshQuota(){
  }catch(e){
   if(requestId!==quotaRequestId)return;
   showFreeAdPreview(false);
+  $('dashboard').hidden=true;
   $('quotaHeading').textContent='No se pudo cargar el contador.';
   $('quotaText').textContent='Tocá «Actualizar contador» para reintentar.';
  }
@@ -377,6 +403,10 @@ $('refreshQuota').onclick=refreshQuota;
 function showSession(session){
 quotaRequestId++;
 showFreeAdPreview(false);
+$('dashboard').hidden=true;
+$('dashPlan').textContent='—';
+$('dashRemaining').textContent='—';
+$('dashHistory').textContent='—';
 const logged=!!session?.user;
 $('authLoggedOut').hidden=logged;
 $('authLoggedIn').hidden=!logged;
@@ -495,11 +525,12 @@ const area=$('historyList');
 if(!area||!supabaseClient)return;
 const {data:sessionData}=await supabaseClient.auth.getSession();
 const session=sessionData?.session;
-if(!session){area.textContent='Iniciá sesión para ver tus generaciones anteriores.';return;}
+if(!session){$('dashHistory').textContent='—';area.textContent='Iniciá sesión para ver tus generaciones anteriores.';return;}
 const {data,error}=await supabaseClient.from('generation_history')
 .select('id,topic,platform,created_at,pack')
 .eq('user_id',session.user.id).order('created_at',{ascending:false}).limit(15);
-if(error){area.textContent='No se pudo cargar el historial: '+error.message;return;}
+if(error){$('dashHistory').textContent='—';area.textContent='No se pudo cargar el historial: '+error.message;return;}
+$('dashHistory').textContent=data?.length===15?'15+':String(data?.length||0);
 if(!data?.length){area.textContent='Todavía no hay generaciones guardadas.';return;}
 area.innerHTML='';
 for(const item of data){
