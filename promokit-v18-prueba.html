@@ -695,6 +695,7 @@ setStatus('Primero iniciá sesión para probar el historial.','error');
 return;
 }
 const session=sessionData.session;
+const requestId=preview?null:crypto.randomUUID();
 persist();
 const b=preview?$('qualityPreview'):$('generate');
 b.disabled=true;
@@ -708,7 +709,7 @@ try{
 response=await fetch(ENDPOINT+(preview?'/quality-preview':''),{
 method:'POST',
 headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
-body:JSON.stringify(payload),
+body:JSON.stringify(preview?payload:{...payload,requestId}),
 signal:ctrl.signal
 });
 }finally{
@@ -741,10 +742,20 @@ notice('Generación parcial: revisá las cantidades.');
 }
 }catch(e){
 setStatus('No se pudo generar: '+(
-e.name==='AbortError'?'La conexión tardó demasiado. La generación podría haberse guardado y consumido un cupo. Antes de intentar otra vez, revisá tu historial y actualizá el contador.':
+e.name==='AbortError'?'La conexión tardó demasiado. Vamos a comprobar si tu paquete se guardó.':
 e.message==='Failed to fetch'?'Revisá tu conexión y volvé a intentar.':
 e.message
 ),'error');
+if(!preview&&requestId&&(e.name==='AbortError'||e.message==='Failed to fetch')){
+  try{
+    const check=await fetch(ENDPOINT+'/request-status',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({requestId})});
+    const status=await check.json();
+    if(check.ok&&status.state==='completed'&&status.pack){pack=status.pack;tab='ideas';showOnlyFavorites=false;render();setStatus('¡Recuperamos tu paquete guardado! No se generó otro ni se gastó un cupo adicional.','success');await refreshHistory();}
+    else if(check.ok&&status.state==='processing')setStatus('La generación todavía podría estar procesándose. Revisá el historial y el contador antes de intentar de nuevo.','error');
+    else if(check.ok&&status.state==='refunded')setStatus('La solicitud se devolvió correctamente. Podés generar otra vez.','error');
+    else setStatus('No pudimos confirmar el estado. Revisá tu historial y contador antes de reintentar.','error');
+  }catch{setStatus('No pudimos comprobar el estado. Revisá tu historial y contador antes de reintentar.','error');}
+}
 await refreshQuota();
 }finally{
 b.disabled=false;
