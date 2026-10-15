@@ -47,6 +47,12 @@ h3{font-size:16px;margin:4px 0 8px;line-height:1.4}
 .print-only{display:none}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid #101a2655;border-top-color:#101a26;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
+.quota-panel{margin:16px 0 8px;padding:16px;background:#101629;border:1px solid #394767;border-radius:14px}
+.quota-meter{height:10px;background:#293653;border-radius:20px;overflow:hidden;margin:12px 0 8px}
+.quota-fill{height:100%;width:0;background:#87e4c1;transition:width .2s}
+.quota-benefits{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.quota-benefits>div{border:1px solid #394767;border-radius:12px;padding:12px}
+@media(max-width:460px){.quota-benefits{grid-template-columns:1fr}}
 .auth-panel{margin-top:20px}
 .auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .auth-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
@@ -107,7 +113,16 @@ h1{display:none}
 </div>
 <div id="authLoggedIn" hidden>
 <p>Sesión iniciada: <strong id="accountEmail"></strong></p>
-<p class="small">Tu cuenta está conectada. Las cuotas Free y Pro todavía no están activas en el servidor.</p>
+<div class="quota-panel" id="quotaPanel">
+<strong id="quotaHeading">Consultando tu plan…</strong>
+<div class="quota-meter" role="progressbar" aria-label="Paquetes utilizados" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0" id="quotaMeter"><div class="quota-fill" id="quotaFill"></div></div>
+<p class="small" id="quotaText">Cargando tu contador mensual.</p>
+<button class="secondary" type="button" id="refreshQuota">Actualizar contador</button>
+<div class="quota-benefits">
+<div><strong>Free · Gratis</strong><p class="small">2 paquetes completos por mes.</p></div>
+<div><strong>Pro · Próximamente</strong><p class="small">30 paquetes por mes. Precio previsto: US$9/mes. Todavía no hay pagos habilitados.</p></div>
+</div>
+</div>
 <button class="secondary" id="signOut">Cerrar sesión</button>
 </div>
 <p id="authStatus" role="status" aria-live="polite" class="small">Preparando inicio de sesión…</p>
@@ -321,12 +336,37 @@ for(const k of keys)$(k).addEventListener('change',persist);
 $('topic').addEventListener('input',persist);
 $('audience').addEventListener('input',persist);
 
+async function refreshQuota(){
+ const panel=$('quotaPanel');
+ if(!panel||!supabaseClient)return;
+ try{
+  const session=(await supabaseClient.auth.getSession()).data?.session;
+  if(!session){$('quotaHeading').textContent='Iniciá sesión para consultar tu plan.';return;}
+  const response=await fetch(ENDPOINT+'/quota',{method:'POST',headers:{Authorization:'Bearer '+session.access_token}});
+  const data=await response.json();
+  if(!response.ok||!data.quota)throw Error(data.error||'No disponible');
+  const q=data.quota;
+  $('quotaHeading').textContent='Plan '+(q.plan==='pro'?'Pro':'Free')+' · '+q.used+' de '+q.limit+' paquetes usados';
+  $('quotaText').textContent=q.remaining===0?'Llegaste al límite de este mes. Tu cupo se renueva el mes próximo.':
+    'Te quedan '+q.remaining+' paquete'+(q.remaining===1?'':'s')+' este mes.';
+  const meter=$('quotaMeter');
+  meter.setAttribute('aria-valuemax',String(q.limit));
+  meter.setAttribute('aria-valuenow',String(q.used));
+  $('quotaFill').style.width=Math.min(100,100*q.used/q.limit)+'%';
+ }catch(e){
+  $('quotaHeading').textContent='No se pudo cargar el contador.';
+  $('quotaText').textContent='Tocá «Actualizar contador» para reintentar.';
+ }
+}
+$('refreshQuota').onclick=refreshQuota;
+
 function showSession(session){
 const logged=!!session?.user;
 $('authLoggedOut').hidden=logged;
 $('authLoggedIn').hidden=!logged;
 $('accountEmail').textContent=logged?(session.user.email||'Usuario'):'';
 setAuthStatus(logged?'Sesión iniciada correctamente.':'Podés registrarte o iniciar sesión.',logged?'success':'');
+if(logged)setTimeout(refreshQuota,0);
 }
 
 function authBusy(busy){
@@ -529,6 +569,7 @@ tab='ideas';
 render();
 setStatus(data.historySaved?'Contenido generado y guardado en tu historial. Revisá los datos antes de publicar.':'Contenido generado, pero no se confirmó el guardado.','success');
 await refreshHistory();
+await refreshQuota();
 if(pack.ideas.length!==15||pack.scripts.length!==7||pack.calendar.length!==14){
 notice('Generación parcial: revisá las cantidades.');
 }
@@ -538,6 +579,7 @@ e.name==='AbortError'?'La solicitud tardó demasiado. Probá otra vez.':
 e.message==='Failed to fetch'?'Revisá tu conexión y volvé a intentar.':
 e.message
 ),'error');
+await refreshQuota();
 }finally{
 b.disabled=false;
 b.textContent='✦ Generar';
