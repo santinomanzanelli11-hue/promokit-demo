@@ -177,6 +177,7 @@ html{scroll-behavior:smooth}section[id]{scroll-margin-top:18px}
 <div class="quota-meter" role="progressbar" aria-label="Paquetes utilizados" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0" id="quotaMeter"><div class="quota-fill" id="quotaFill"></div></div>
 <p class="small" id="quotaText">Cargando tu contador mensual.</p>
 <button class="secondary" type="button" id="refreshQuota" data-i18n="refreshQuota">Actualizar contador</button>
+<button class="secondary" type="button" id="testRecovery">Probar recuperación (sin gastar cupos)</button>
 <div class="quota-benefits">
 <div><strong>Free · Gratis</strong><p class="small">2 paquetes completos por mes.</p></div>
 <div><strong>Pro · Próximamente</strong><p class="small">30 paquetes por mes. Precio previsto: US$9/mes. Todavía no hay pagos habilitados.</p></div>
@@ -506,6 +507,21 @@ async function refreshQuota(){
  }
 }
 $('refreshQuota').onclick=refreshQuota;
+$('testRecovery').onclick=async()=>{
+ const btn=$('testRecovery');btn.disabled=true;
+ try{
+  const session=(await supabaseClient.auth.getSession()).data?.session;
+  if(!session)throw Error('Iniciá sesión primero.');
+  const requestId=crypto.randomUUID();
+  const response=await fetch(ENDPOINT+'/request-status',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({requestId})});
+  const result=await response.json();
+  if(!response.ok)throw Error(result.error||'HTTP '+response.status);
+  if(result.state!=='not_found')throw Error('Estado inesperado: '+result.state);
+  notice('Prueba correcta: recuperación responde sin gastar cupos.');
+  setAuthStatus('Prueba de recuperación correcta: solicitud inexistente detectada, sin gastar cupos.','success');
+ }catch(error){setAuthStatus('Prueba de recuperación fallida: '+String(error.message||error),'error');}
+ finally{btn.disabled=false;}
+};
 
 function showSession(session){
 const nextUserId=session?.user?.id||null;
