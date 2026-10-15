@@ -47,6 +47,7 @@ h3{font-size:16px;margin:4px 0 8px;line-height:1.4}
 .print-only{display:none}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid #101a2655;border-top-color:#101a26;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
+.ad-preview{margin:18px 0;padding:18px;border:1px dashed #456079;border-radius:15px;background:#111b2d;text-align:center}.ad-preview strong{display:block;color:#dce9ff;margin:5px 0}.ad-preview p{margin:6px 0}.ad-label{font-size:11px;letter-spacing:.08em;color:#a8b8d3;text-transform:uppercase}.ad-preview[hidden]{display:none!important}
 .quota-panel{margin:16px 0 8px;padding:16px;background:#101629;border:1px solid #394767;border-radius:14px}
 .quota-meter{height:10px;background:#293653;border-radius:20px;overflow:hidden;margin:12px 0 8px}
 .quota-fill{height:100%;width:0;background:#87e4c1;transition:width .2s}
@@ -134,6 +135,7 @@ h1{display:none}
 <button id="refreshHistory" class="secondary" type="button">Actualizar historial</button>
 <div id="historyList" style="margin-top:14px">Iniciá sesión para ver tu historial.</div>
 </section>
+<aside id="freeAdPreview" class="ad-preview no-print" aria-label="Espacio publicitario de prueba" hidden><span class="ad-label">Espacio publicitario · Vista previa</span><strong>PromoKit Free con publicidad</strong><p class="small">Aquí aparecerá un anuncio cuando habilitemos una red publicitaria. Por ahora no se muestra publicidad real.</p></aside>
 <div class="layout">
 <section class="panel form-panel">
 <h2>Tu próximo contenido</h2>
@@ -337,7 +339,11 @@ for(const k of keys)$(k).addEventListener('change',persist);
 $('topic').addEventListener('input',persist);
 $('audience').addEventListener('input',persist);
 
+let quotaRequestId=0;
+function showFreeAdPreview(show){$('freeAdPreview').hidden=!show;}
 async function refreshQuota(){
+ const requestId=++quotaRequestId;
+ showFreeAdPreview(false);
  const panel=$('quotaPanel');
  if(!panel||!supabaseClient)return;
  try{
@@ -346,7 +352,11 @@ async function refreshQuota(){
   const response=await fetch(ENDPOINT+'/quota',{method:'POST',headers:{Authorization:'Bearer '+session.access_token}});
   const data=await response.json();
   if(!response.ok||!data.quota)throw Error(data.error||'No disponible');
+  if(requestId!==quotaRequestId)return;
+  const currentSession=(await supabaseClient.auth.getSession()).data?.session;
+  if(currentSession?.user?.id!==session.user.id)return;
   const q=data.quota;
+  showFreeAdPreview(q.plan==='free');
   $('qualityPreview').hidden=!q.qualityPreviewEnabled;
   $('quotaHeading').textContent='Plan '+(q.plan==='pro'?'Pro':'Free')+' · '+q.used+' de '+q.limit+' paquetes usados';
   $('quotaText').textContent=q.remaining===0?'Llegaste al límite de este mes. Tu cupo se renueva el mes próximo.':
@@ -356,6 +366,8 @@ async function refreshQuota(){
   meter.setAttribute('aria-valuenow',String(q.used));
   $('quotaFill').style.width=Math.min(100,100*q.used/q.limit)+'%';
  }catch(e){
+  if(requestId!==quotaRequestId)return;
+  showFreeAdPreview(false);
   $('quotaHeading').textContent='No se pudo cargar el contador.';
   $('quotaText').textContent='Tocá «Actualizar contador» para reintentar.';
  }
@@ -363,6 +375,8 @@ async function refreshQuota(){
 $('refreshQuota').onclick=refreshQuota;
 
 function showSession(session){
+quotaRequestId++;
+showFreeAdPreview(false);
 const logged=!!session?.user;
 $('authLoggedOut').hidden=logged;
 $('authLoggedIn').hidden=!logged;
