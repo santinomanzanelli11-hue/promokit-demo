@@ -160,6 +160,7 @@ h1{display:none}
 </select>
 <button id="generate" style="width:100%;margin-top:18px">✦ Generar</button>
 <button id="diagnoseHistory" class="secondary" type="button">Comprobar Supabase sin generar</button>
+<button id="qualityPreview" class="secondary" type="button" hidden>Prueba privada de calidad (no consume cupo)</button>
 <p class="small">No incluyas información privada. Revisá las afirmaciones antes de publicar. Esta versión de prueba tiene límites de uso por IP.</p>
 </section>
 
@@ -346,6 +347,7 @@ async function refreshQuota(){
   const data=await response.json();
   if(!response.ok||!data.quota)throw Error(data.error||'No disponible');
   const q=data.quota;
+  $('qualityPreview').hidden=!q.qualityPreviewEnabled;
   $('quotaHeading').textContent='Plan '+(q.plan==='pro'?'Pro':'Free')+' · '+q.used+' de '+q.limit+' paquetes usados';
   $('quotaText').textContent=q.remaining===0?'Llegaste al límite de este mes. Tu cupo se renueva el mes próximo.':
     'Te quedan '+q.remaining+' paquete'+(q.remaining===1?'':'s')+' este mes.';
@@ -515,7 +517,9 @@ $('diagnoseHistory').onclick=async()=>{
  }catch(e){setStatus('Diagnóstico fallido: '+String(e.message||e),'error');}
  finally{b.disabled=false;}
 };
-$('generate').onclick=async()=>{
+$('qualityPreview').onclick=()=>generateContent(true);
+$('generate').onclick=()=>generateContent(false);
+async function generateContent(preview=false){
 const payload=Object.fromEntries(keys.map(k=>[k,$(k).value.trim()]));
 if(payload.topic.length<3){
 setStatus('Escribí una temática específica (al menos 3 caracteres).','error');
@@ -530,7 +534,7 @@ return;
 }
 const session=sessionData.session;
 persist();
-const b=$('generate');
+const b=preview?$('qualityPreview'):$('generate');
 b.disabled=true;
 b.innerHTML='<span class="spinner"></span>Generando…';
 setStatus('Preparando tus ideas, guiones y calendario. Puede tardar unos segundos…');
@@ -539,7 +543,7 @@ const ctrl=new AbortController();
 const timer=setTimeout(()=>ctrl.abort(),90000);
 let response;
 try{
-response=await fetch(ENDPOINT,{
+response=await fetch(ENDPOINT+(preview?'/quality-preview':''),{
 method:'POST',
 headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
 body:JSON.stringify(payload),
@@ -567,7 +571,7 @@ throw Error('El contenido llegó incompleto. Probá otra vez.');
 pack=data.pack;
 tab='ideas';
 render();
-setStatus(data.historySaved?'Contenido generado y guardado en tu historial. Revisá los datos antes de publicar.':'Contenido generado, pero no se confirmó el guardado.','success');
+setStatus(data.qualityPreview?'Prueba privada generada. No consume cupo ni se guarda en el historial. Revisá los datos antes de publicar.':data.historySaved?'Contenido generado y guardado en tu historial. Revisá los datos antes de publicar.':'Contenido generado, pero no se confirmó el guardado.','success');
 await refreshHistory();
 await refreshQuota();
 if(pack.ideas.length!==15||pack.scripts.length!==7||pack.calendar.length!==14){
@@ -582,9 +586,9 @@ e.message
 await refreshQuota();
 }finally{
 b.disabled=false;
-b.textContent='✦ Generar';
+b.textContent=preview?'Prueba privada de calidad (no consume cupo)':'✦ Generar';
 }
-};
+}
 </script>
 </body>
 </html>
