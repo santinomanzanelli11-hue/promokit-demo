@@ -117,6 +117,18 @@ html{scroll-behavior:smooth}section[id]{scroll-margin-top:18px}
 .workspace-actions{display:flex;gap:9px;flex-wrap:wrap}
 .workspace-actions button{font-size:12px}
 @media(max-width:600px){.result{padding:16px}.result .result-tools button{flex:1 1 130px}.workspace-actions button{flex:1 1 140px}}
+
+/* V18: compact account and recovery controls */
+.account-actions{display:flex;justify-content:flex-start;margin-top:14px}
+.account-actions button{width:auto!important;max-width:100%;padding:11px 16px!important;font-size:14px!important;border-radius:10px}
+.recovery-tools{margin-top:18px;padding:15px;border:1px solid #394767;border-radius:13px;background:rgba(33,47,76,.35)}
+.recovery-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:700;font-size:14px}
+.recovery-tag{font-size:10px;letter-spacing:.08em;padding:4px 8px;border-radius:20px;color:#a8ead3;background:rgba(77,190,150,.13)}
+.recovery-tools p{margin:9px 0 13px;font-size:12px;line-height:1.5;color:#b7c5dc}
+.recovery-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.recovery-actions button{width:100%!important;min-width:0;padding:10px 9px!important;border-radius:9px;font-size:12px!important;line-height:1.35;white-space:normal}
+.recovery-actions .recovery-test{background:transparent!important;border:1px solid #53617c}
+@media(max-width:360px){.recovery-actions{grid-template-columns:1fr}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 </head>
@@ -176,9 +188,8 @@ html{scroll-behavior:smooth}section[id]{scroll-margin-top:18px}
 <strong id="quotaHeading">Consultando tu plan…</strong>
 <div class="quota-meter" role="progressbar" aria-label="Paquetes utilizados" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0" id="quotaMeter"><div class="quota-fill" id="quotaFill"></div></div>
 <p class="small" id="quotaText">Cargando tu contador mensual.</p>
-<button class="secondary" type="button" id="refreshQuota" data-i18n="refreshQuota">Actualizar contador</button>
-<button class="secondary" type="button" id="testRecovery">Probar recuperación (sin gastar cupos)</button>
-<button class="secondary" type="button" id="recoverPending">Recuperar última solicitud pendiente</button>
+<div class="account-actions"><button class="secondary" type="button" id="refreshQuota" data-i18n="refreshQuota">Actualizar contador</button></div>
+<div class="recovery-tools"><div class="recovery-heading"><span>Herramientas de recuperación</span><span class="recovery-tag">PRUEBA</span></div><p class="small">Consultá una generación interrumpida sin gastar otro cupo.</p><div class="recovery-actions"><button class="secondary" type="button" id="recoverPending">Recuperar solicitud</button><button class="secondary recovery-test" type="button" id="testRecovery">Verificar conexión</button></div></div>
 <div class="quota-benefits">
 <div><strong>Free · Gratis</strong><p class="small">2 paquetes completos por mes.</p></div>
 <div><strong>Pro · Próximamente</strong><p class="small">30 paquetes por mes. Precio previsto: US$9/mes. Todavía no hay pagos habilitados.</p></div>
