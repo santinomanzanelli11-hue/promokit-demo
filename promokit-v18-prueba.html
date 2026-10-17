@@ -399,18 +399,18 @@ function updateWorkspace(){
 }
 function cards(k,print=false){
 const arr=Array.isArray(pack?.[k])?pack[k]:[];
-if(!arr.length)return '<p class="muted">Sin contenido para esta sección.</p>';
+if(!arr.length)return '<p class="muted">'+(uiLanguage==='en'?'No content in this section.':'Sin contenido para esta sección.')+'</p>';
 const favs=verifiedPlan==='pro'?readFavorites():[];
 return arr.map((v,i)=>{
  const id=favId(k,v);
  if(!print&&showOnlyFavorites&&verifiedPlan==='pro'&&!favs.some(f=>f.id===id))return '';
  const tools=print?'':`<div class="result-tools no-print"><button type="button" class="secondary" data-copy-item="${i}">${uiLanguage==='en'?'Copy item':'Copiar elemento'}</button>${verifiedPlan==='pro'?`<button type="button" class="secondary" data-favorite-item="${i}" aria-pressed="${favs.some(f=>f.id===id)}">${favs.some(f=>f.id===id)?'★':'☆'} ${uiLanguage==='en'?'Favorite':'Favorito'}</button>`:''}</div>`;
  if(k==='ideas')return `<article class="result"><h3>${i+1}. ${esc(v.title)}</h3><p>${esc(v.format)}</p>${tools}</article>`;
- if(k==='scripts')return `<article class="result"><h3>${i+1}. ${esc(v.title)}</h3><p><b>Gancho:</b> ${esc(v.hook)}</p><p><b>Narración:</b> ${esc(v.narration)}</p><p><b>Cierre:</b> ${esc(v.cta)}</p><p class="small"><b>Cómo grabarlo:</b> ${esc(v.visual)}</p>${tools}</article>`;
+ if(k==='scripts')return `<article class="result"><h3>${i+1}. ${esc(v.title)}</h3><p><b>${uiLanguage==='en'?'Hook':'Gancho'}:</b> ${esc(v.hook)}</p><p><b>${uiLanguage==='en'?'Narration':'Narración'}:</b> ${esc(v.narration)}</p><p><b>${uiLanguage==='en'?'Call to action':'Cierre'}:</b> ${esc(v.cta)}</p><p class="small"><b>${uiLanguage==='en'?'How to film':'Cómo grabarlo'}:</b> ${esc(v.visual)}</p>${tools}</article>`;
  if(k==='longVideos')return `<article class="result"><h3>${i+1}. ${esc(v.title)}</h3><p>${(Array.isArray(v.outline)?v.outline:[]).map(esc).join(' · ')}</p>${tools}</article>`;
- if(k==='calendar')return `<article class="result"><h3>Día ${esc(v.day)} · ${esc(v.action)}</h3><p>${esc(v.content)}</p>${tools}</article>`;
+ if(k==='calendar')return `<article class="result"><h3>${dayLabel()} ${esc(v.day)} · ${esc(v.action)}</h3><p>${esc(v.content)}</p>${tools}</article>`;
  return `<article class="result"><p>${esc(v)}</p>${tools}</article>`;
-}).join('')||(showOnlyFavorites?'<p class="muted">No hay favoritos en esta sección.</p>':'');
+}).join('')||(showOnlyFavorites?'<p class="muted">'+(uiLanguage==='en'?'No favorites in this section.':'No hay favoritos en esta sección.')+'</p>':'');
 }
 
 function render(){
