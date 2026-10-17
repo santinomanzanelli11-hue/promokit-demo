@@ -328,6 +328,10 @@ longVideos:'Videos largos',
 calendar:'Calendario',
 tips:'Consejos'
 };
+const namesEn={ideas:'Ideas',scripts:'Scripts',longVideos:'Long videos',calendar:'Calendar',tips:'Tips'};
+function sectionNames(){return uiLanguage==='en'?namesEn:names;}
+function dayLabel(){return uiLanguage==='en'?'Day':'Día';}
+
 
 let pack=null;
 let tab='ideas';
@@ -365,12 +369,13 @@ el.className='small '+type;
 }
 
 function scriptText(v){
+const en=uiLanguage==='en';
 return [
 v.title,
-'Gancho: '+(v.hook||''),
-'Narración: '+(v.narration||''),
-'Cierre: '+(v.cta||''),
-'Cómo grabarlo: '+(v.visual||'')
+(en?'Hook: ':'Gancho: ')+(v.hook||''),
+(en?'Narration: ':'Narración: ')+(v.narration||''),
+(en?'Call to action: ':'Cierre: ')+(v.cta||''),
+(en?'Filming instructions: ':'Cómo grabarlo: ')+(v.visual||'')
 ].join('\n\n');
 }
 
@@ -382,7 +387,7 @@ const favoriteTypes=new Set(['ideas','scripts','longVideos','calendar','tips']);
 function favKey(){return verifiedUserId?'promokit-v18-favorites-'+verifiedUserId:null;}
 function readFavorites(){if(verifiedPlan!=='pro'||!favKey())return [];try{const v=JSON.parse(localStorage.getItem(favKey())||'[]');return Array.isArray(v)?v.filter(x=>x&&favoriteTypes.has(x.kind)&&typeof x.text==='string'&&x.text.length<=8000).slice(0,250):[];}catch{return [];}}
 function writeFavorites(items){const key=favKey();if(!key||verifiedPlan!=='pro')return;try{localStorage.setItem(key,JSON.stringify(items.slice(0,250)));}catch{notice('No se pudieron guardar los favoritos en este dispositivo.');}}
-function cardText(k,v){if(k==='scripts')return scriptText(v);if(k==='ideas')return [v?.title,v?.format].filter(Boolean).join(' — ');if(k==='longVideos')return [v?.title,...(Array.isArray(v?.outline)?v.outline:[])].join('\n');if(k==='calendar')return 'Día '+(v?.day||'')+' · '+(v?.action||'')+'\n'+(v?.content||'');return plain(v);}
+function cardText(k,v){if(k==='scripts')return scriptText(v);if(k==='ideas')return [v?.title,v?.format].filter(Boolean).join(' — ');if(k==='longVideos')return [v?.title,...(Array.isArray(v?.outline)?v.outline:[])].join('\n');if(k==='calendar')return dayLabel()+' '+(v?.day||'')+' · '+(v?.action||'')+'\n'+(v?.content||'');return plain(v);}
 function favId(k,v){return k+':'+cardText(k,v);}
 function updateWorkspace(){
  $('proWorkspace').hidden=verifiedPlan!=='pro'||!verifiedUserId||!pack;
@@ -411,14 +416,14 @@ return arr.map((v,i)=>{
 function render(){
 if(!pack)return;
 updateWorkspace();
-$('tabs').innerHTML=Object.entries(names).map(([k,n])=>`<button role="tab" aria-selected="${k===tab}" class="secondary ${k===tab?'active':''}" data-tab="${k}">${n}</button>`).join('');
+$('tabs').innerHTML=Object.entries(sectionNames()).map(([k,n])=>`<button role="tab" aria-selected="${k===tab}" class="secondary ${k===tab?'active':''}" data-tab="${k}">${n}</button>`).join('');
 $('results').innerHTML=cards(tab);
-$('printResults').innerHTML='<h1>PromoKit Creator AI · Tu paquete</h1>'+Object.entries(names).map(([k,n])=>`<h2>${n}</h2>${cards(k,true)}`).join('');
+$('printResults').innerHTML='<h1>PromoKit Creator AI · '+(uiLanguage==='en'?'Your package':'Tu paquete')+'</h1>'+Object.entries(sectionNames()).map(([k,n])=>`<h2>${n}</h2>${cards(k,true)}`).join('');
 $('summary').innerHTML=[
 ['ideas','Ideas'],
-['scripts','Guiones'],
-['longVideos','Videos largos'],
-['calendar','Días']
+['scripts',uiLanguage==='en'?'Scripts':'Guiones'],
+['longVideos',uiLanguage==='en'?'Long videos':'Videos largos'],
+['calendar',uiLanguage==='en'?'Days':'Días']
 ].map(([k,n])=>`<div class="stat"><strong>${Array.isArray(pack[k])?pack[k].length:0}</strong><span>${n}</span></div>`).join('');
 $('summary').hidden=false;
 $('actions').hidden=false;
@@ -426,7 +431,7 @@ $('tabs').hidden=false;
 }
 
 function allText(){
-return Object.entries(names).map(([k,n])=>n.toUpperCase()+'\n\n'+(pack?.[k]||[]).map((v,i)=>`${i+1}. `+(k==='scripts'?scriptText(v):k==='ideas'?`${v.title} (${v.format})`:k==='longVideos'?`${v.title}\n${(v.outline||[]).join('\n')}`:k==='calendar'?`Día ${v.day}: ${v.action} — ${v.content}`:plain(v))).join('\n\n')).join('\n\n──────────────\n\n');
+return Object.entries(sectionNames()).map(([k,n])=>n.toUpperCase()+'\n\n'+(pack?.[k]||[]).map((v,i)=>`${i+1}. `+(k==='scripts'?scriptText(v):k==='ideas'?`${v.title} (${v.format})`:k==='longVideos'?`${v.title}\n${(v.outline||[]).join('\n')}`:k==='calendar'?`${dayLabel()} ${v.day}: ${v.action} — ${v.content}`:plain(v))).join('\n\n')).join('\n\n──────────────\n\n');
 }
 
 async function copyText(s){
