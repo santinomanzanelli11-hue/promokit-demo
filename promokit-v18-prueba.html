@@ -201,6 +201,7 @@ html{scroll-behavior:smooth}section[id]{scroll-margin-top:18px}
 <p class="small" id="quotaText">Cargando tu contador mensual.</p>
 <div class="account-actions"><button class="secondary" type="button" id="refreshQuota" data-i18n="refreshQuota">Actualizar contador</button></div>
 <div class="recovery-simulation"><button class="secondary" type="button" id="simulateRecovery">Simular corte de conexión</button><p class="small">Prueba sin IA ni consumo de cupos. Recargá la página y consultá la solicitud.</p></div>
+<div class="recovery-simulation"><button class="secondary" type="button" id="auditReadOnly">Auditoría de seguridad · sin gastar cupos</button><p class="small">Comprueba cuatro controles sin generar contenido.</p></div>
 <div class="recovery-cards"><div class="recovery-card"><strong>Recuperar contenido</strong><p class="small">Consultá tu última generación interrumpida sin gastar otro cupo.</p><button class="secondary" type="button" id="recoverPending">Recuperar solicitud</button></div><div class="recovery-card"><strong>Comprobar sistema</strong><p class="small">Verificá la conexión de recuperación sin generar contenido.</p><button class="secondary" type="button" id="testRecovery">Verificar conexión</button></div></div>
 <div class="quota-benefits">
 <div><strong>Free · Gratis</strong><p class="small">2 paquetes completos por mes.</p></div>
@@ -720,6 +721,27 @@ $('diagnoseHistory').onclick=async()=>{
  finally{b.disabled=false;}
 };
 const pendingKey='promokit-v18-pending-request';
+$('auditReadOnly').onclick=async()=>{
+ const b=$('auditReadOnly');b.disabled=true;
+ try{
+  const session=(await supabaseClient.auth.getSession()).data?.session;
+  if(!session)throw Error('Iniciá sesión primero.');
+  const headers={'Content-Type':'application/json','Authorization':'Bearer '+session.access_token};
+  const initialRes=await fetch(ENDPOINT+'/quota',{method:'POST',headers});
+  const initial=await initialRes.json();
+  if(!initialRes.ok||!initial.quota)throw Error('No se pudo consultar el contador.');
+  const anon=await fetch(ENDPOINT+'/request-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestId:crypto.randomUUID()})});
+  const invalid=await fetch(ENDPOINT+'/request-status',{method:'POST',headers,body:JSON.stringify({requestId:'invalid'})});
+  const missing=await fetch(ENDPOINT+'/request-status',{method:'POST',headers,body:JSON.stringify({requestId:crypto.randomUUID()})});
+  const missingData=await missing.json();
+  const finalRes=await fetch(ENDPOINT+'/quota',{method:'POST',headers});
+  const final=await finalRes.json();
+  const checks=[['Sin sesión',anon.status===401],['ID inválido',invalid.status===400],['ID inexistente',missing.ok&&missingData.state==='not_found'],['Cupos sin cambios',finalRes.ok&&final.quota?.used===initial.quota.used]];
+  const passed=checks.filter(x=>x[1]).length;
+  setStatus('Auditoría '+passed+'/4: '+checks.map(x=>(x[1]?'✓ ':'✗ ')+x[0]).join(' · '),passed===4?'success':'error');
+ }catch(e){setStatus('Auditoría interrumpida: '+String(e.message||e),'error');}
+ finally{b.disabled=false;}
+};
 $('simulateRecovery').onclick=async()=>{
  try{
   const session=(await supabaseClient.auth.getSession()).data?.session;
