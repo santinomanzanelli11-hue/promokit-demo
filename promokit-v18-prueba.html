@@ -749,6 +749,7 @@ $('recoverPending').onclick=async()=>{
    await refreshHistory();await refreshQuota();
   }else if(result.state==='processing')setStatus('La solicitud sigue pendiente. Esperá y volvé a consultar; no generes otra todavía.','error');
   else if(result.state==='refunded'){localStorage.removeItem(pendingKey);setStatus('La solicitud fue reembolsada. Podés volver a generar.','success');await refreshQuota();}
+  else if(result.state==='completed_without_history')setStatus('El cupo figura como completado pero falta el paquete. No generes de nuevo: guardá este mensaje para soporte.','error');
   else if(result.state==='not_found'&&saved.simulation){localStorage.removeItem(pendingKey);setStatus('Simulación correcta: el identificador sobrevivió a la recarga y el servidor respondió. No se gastaron cupos.','success');}
   else setStatus('No encontramos un paquete para esa solicitud. Revisá historial y contador antes de reintentar.','error');
  }catch(e){setStatus('Recuperación: '+String(e.message||e),'error');}
