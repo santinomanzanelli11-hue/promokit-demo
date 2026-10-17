@@ -831,7 +831,7 @@ e.name==='AbortError'?'La conexión tardó demasiado. Vamos a comprobar si tu pa
 e.message==='Failed to fetch'?'Revisá tu conexión y volvé a intentar.':
 e.message
 ),'error');
-if(!preview&&requestId&&(e.name==='AbortError'||e.message==='Failed to fetch')){
+if(!preview&&requestId&&(e.name==='AbortError'||e.message==='Failed to fetch'||String(e.message||'').includes('cierre del cupo')||String(e.message||'').includes('confirmar si el paquete'))){
   try{
     const check=await fetch(ENDPOINT+'/request-status',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({requestId})});
     const status=await check.json();
