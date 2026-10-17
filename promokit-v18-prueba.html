@@ -809,7 +809,10 @@ if(!preview){
  }
 }
 const requestId=preview?null:crypto.randomUUID();
-if(requestId)localStorage.setItem(pendingKey,JSON.stringify({requestId,userId:session.user.id,createdAt:Date.now()}));
+if(requestId){
+ try{localStorage.setItem(pendingKey,JSON.stringify({requestId,userId:session.user.id,createdAt:Date.now()}));}
+ catch(error){setStatus('No se pudo guardar el identificador de recuperación en este navegador. Liberá espacio o habilitá almacenamiento antes de generar.','error');return;}
+}
 persist();
 const b=preview?$('qualityPreview'):$('generate');
 b.disabled=true;
