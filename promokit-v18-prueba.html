@@ -732,6 +732,17 @@ $('diagnoseHistory').onclick=async()=>{
 };
 const pendingKey='promokit-v18-pending-request';
 const lastSavedKey='promokit-v18-last-saved-request';
+function rememberCompletedRequest(requestId,userId){
+ try{localStorage.setItem(lastSavedKey,JSON.stringify({requestId,userId}));}catch{}
+}
+function validateClientPack(p){
+ return !!p&&typeof p==='object'&&
+ Array.isArray(p.ideas)&&p.ideas.length===15&&
+ Array.isArray(p.scripts)&&p.scripts.length===7&&
+ Array.isArray(p.longVideos)&&p.longVideos.length===3&&
+ Array.isArray(p.calendar)&&p.calendar.length===14&&
+ Array.isArray(p.tips)&&p.tips.length===3;
+}
 $('verifyLastSaved').onclick=async()=>{
  const button=$('verifyLastSaved');button.disabled=true;
  try{
@@ -742,7 +753,7 @@ $('verifyLastSaved').onclick=async()=>{
   const response=await fetch(ENDPOINT+'/request-status',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({requestId:saved.requestId})});
   const result=await response.json();
   if(!response.ok)throw Error(result.error||'HTTP '+response.status);
-  const valid=result.state==='completed'&&result.historySaved===true&&result.pack&&Array.isArray(result.pack.ideas)&&result.pack.ideas.length===15&&Array.isArray(result.pack.scripts)&&result.pack.scripts.length===7&&Array.isArray(result.pack.calendar)&&result.pack.calendar.length===14;
+  const valid=result.state==='completed'&&result.historySaved===true&&validateClientPack(result.pack);
   setStatus(valid?'Verificación correcta: el paquete existe en el historial y se recupera sin consumir cupos.':'No se pudo verificar el paquete: estado '+String(result.state||'desconocido'),valid?'success':'error');
  }catch(e){setStatus('Verificación: '+String(e.message||e),'error');}
  finally{button.disabled=false;}
@@ -790,8 +801,8 @@ $('recoverPending').onclick=async()=>{
   const response=await fetch(ENDPOINT+'/request-status',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({requestId:saved.requestId})});
   const result=await response.json();
   if(!response.ok)throw Error(result.error||'HTTP '+response.status);
-  if(result.state==='completed'&&result.pack){
-   try{localStorage.setItem(lastSavedKey,JSON.stringify({requestId:saved.requestId,userId:session.user.id}));}catch{}
+  if(result.state==='completed'&&validateClientPack(result.pack)){
+   rememberCompletedRequest(saved.requestId,session.user.id);
    pack=result.pack;tab='ideas';showOnlyFavorites=false;render();
    localStorage.removeItem(pendingKey);
    setStatus('¡Paquete recuperado sin generar otro ni consumir otro cupo!','success');
@@ -879,12 +890,12 @@ const details=diagnostic?.stage==='history_save'
   : '';
 throw Error((data.error||'Error '+response.status)+details);
 }
-if(!data.pack||!Array.isArray(data.pack.ideas)||!Array.isArray(data.pack.scripts)||!Array.isArray(data.pack.calendar)){
+if(!validateClientPack(data.pack)){
 throw Error('El contenido llegó incompleto. Probá otra vez.');
 }
 if(requestId&&data.historySaved){
  localStorage.removeItem(pendingKey);
- try{localStorage.setItem(lastSavedKey,JSON.stringify({requestId,userId:session.user.id}));}catch{}
+ rememberCompletedRequest(requestId,session.user.id);
 }
 pack=data.pack;
 tab='ideas';showOnlyFavorites=false;
@@ -892,9 +903,7 @@ render();
 setStatus(data.qualityPreview?'Prueba privada generada. No consume cupo ni se guarda en el historial. Revisá los datos antes de publicar.':data.historySaved?'Contenido generado y guardado en tu historial. Revisá los datos antes de publicar.':'Contenido generado, pero no se confirmó el guardado.','success');
 await refreshHistory();
 await refreshQuota();
-if(pack.ideas.length!==15||pack.scripts.length!==7||pack.calendar.length!==14){
-notice('Generación parcial: revisá las cantidades.');
-}
+
 }catch(e){
 setStatus('No se pudo generar: '+(
 e.name==='AbortError'?'La conexión tardó demasiado. Vamos a comprobar si tu paquete se guardó.':
@@ -905,7 +914,7 @@ if(!preview&&requestId){
   try{
     const check=await fetch(ENDPOINT+'/request-status',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({requestId})});
     const status=await check.json();
-    if(check.ok&&status.state==='completed'&&status.pack){localStorage.removeItem(pendingKey);try{localStorage.setItem(lastSavedKey,JSON.stringify({requestId,userId:session.user.id}));}catch{}pack=status.pack;tab='ideas';showOnlyFavorites=false;render();setStatus('¡Recuperamos tu paquete guardado! No se generó otro ni se gastó un cupo adicional.','success');await refreshHistory();}
+    if(check.ok&&status.state==='completed'&&validateClientPack(status.pack)){localStorage.removeItem(pendingKey);rememberCompletedRequest(requestId,session.user.id);pack=status.pack;tab='ideas';showOnlyFavorites=false;render();setStatus('¡Recuperamos tu paquete guardado! No se generó otro ni se gastó un cupo adicional.','success');await refreshHistory();}
     else if(check.ok&&status.state==='processing')setStatus('La generación todavía podría estar procesándose. Revisá el historial y el contador antes de intentar de nuevo.','error');
     else if(check.ok&&status.state==='refunded'){localStorage.removeItem(pendingKey);setStatus('La solicitud fue reembolsada. Podés generar otra vez.','success');}
     else if(check.ok&&status.state==='completed_without_history')setStatus('El cupo figura completado pero el paquete no aparece. No vuelvas a generar: consultá soporte.','error');
