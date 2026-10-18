@@ -104,6 +104,7 @@ html{scroll-behavior:smooth}section[id]{scroll-margin-top:18px}
 @media(max-width:800px){.feature-grid{grid-template-columns:1fr}.pricing-grid{grid-template-columns:1fr 1fr}.hero-v18{padding:22px}.layout{gap:12px}.panel{padding:16px}}
 @media(max-width:460px){.pricing-grid{grid-template-columns:1fr}.hero-actions a{width:100%;text-align:center}.site-nav{padding:8px 12px}main{padding-top:16px}}
 @media print{.site-nav,.hero-v18,.feature-grid,.pricing-grid,.legal-content,.mobile-shortcuts,.section-title{display:none!important}}
+@media print{#printResults h2{break-after:avoid;page-break-after:avoid;orphans:3}#printResults h2 + .result{break-before:avoid;page-break-before:avoid}#printResults .result{break-inside:avoid;page-break-inside:avoid}}
 
 /* V18: readable results, account-scoped local Pro favorites */
 .result{position:relative;overflow-wrap:anywhere;line-height:1.6}
