@@ -697,6 +697,8 @@ if(!session){$('dashHistory').textContent='—';area.textContent=uiLanguage==='e
 const {data,error}=await supabaseClient.from('generation_history')
 .select('id,topic,platform,created_at,pack')
 .eq('user_id',session.user.id).order('created_at',{ascending:false}).limit(15);
+const currentSession=(await supabaseClient.auth.getSession()).data?.session;
+if(currentSession?.user?.id!==session.user.id)return;
 if(error){$('dashHistory').textContent='—';area.textContent=(uiLanguage==='en'?'Could not load history: ':'No se pudo cargar el historial: ')+error.message;return;}
 $('dashHistory').textContent=data?.length===15?'15+':String(data?.length||0);
 if(!data?.length){area.textContent=uiLanguage==='en'?'No saved generations yet.':'Todavía no hay generaciones guardadas.';return;}
@@ -712,7 +714,12 @@ info.textContent=[item.platform,new Date(item.created_at).toLocaleString()].filt
 const button=document.createElement('button');
 button.className='secondary';
 button.textContent=uiLanguage==='en'?'Open saved package':'Ver paquete guardado';
-button.onclick=()=>{pack=item.pack;tab='ideas';showOnlyFavorites=false;render();setStatus(uiLanguage==='en'?'Package loaded from history.':'Paquete recuperado del historial.','success');window.scrollTo({top:0,behavior:'smooth'});};
+button.onclick=()=>{
+ if(!validateClientPack(item.pack)){setStatus(uiLanguage==='en'?'Saved package is incomplete.':'El paquete guardado está incompleto.','error');return;}
+ pack=item.pack;tab='ideas';showOnlyFavorites=false;render();
+ setStatus(uiLanguage==='en'?'Package loaded from history.':'Paquete recuperado del historial.','success');
+ $('title').scrollIntoView({behavior:'smooth',block:'start'});
+};
 entry.append(title,info,button);area.append(entry);
 }
 }
