@@ -993,7 +993,25 @@ data=await response.json();
 throw Error('El servidor devolvió una respuesta que no pudimos leer.');
 }
 if(!response.ok){
-const diagnostic=data.diagnostic;
+ // The quota rejection is authoritative: the Worker did not create a
+ // reservation for this UUID. Clear ONLY this exact request, never a
+ // pending request from another account or an ambiguous server error.
+ if(!preview&&response.status===429&&data?.quota&&
+    Number.isFinite(Number(data.quota.used))&&
+    Number.isFinite(Number(data.quota.limit))&&
+    Number(data.quota.used)>=Number(data.quota.limit)){
+   try{
+     const saved=JSON.parse(localStorage.getItem(pendingKey)||'null');
+     if(saved?.requestId===requestId&&saved?.userId===session.user.id)
+       localStorage.removeItem(pendingKey);
+   }catch{}
+   setStatus(uiLanguage==='en'
+     ?'You reached this month\'s package limit. Nothing was generated or charged; your account is not blocked.'
+     :'Llegaste al límite de paquetes de este mes. No se generó ni cobró otro paquete y la cuenta no queda bloqueada.','error');
+   await refreshQuota();
+   return;
+ }
+ const diagnostic=data.diagnostic;
 const details=diagnostic?.stage==='history_save'
   ? ' (Supabase HTTP '+String(diagnostic.httpStatus||'unknown')+', código '+String(diagnostic.dbCode||'unknown')+')'
   : '';
