@@ -144,6 +144,13 @@ html{scroll-behavior:smooth}section[id]{scroll-margin-top:18px}
 .test-tools{margin-top:14px;border:1px solid #394767;border-radius:12px;padding:12px 14px;background:#11182a}.test-tools summary{cursor:pointer;color:#b7c5dc;font-weight:650;font-size:13px}.test-tools summary:focus-visible{outline:2px solid #87e4c1;outline-offset:4px}.test-tools[open] summary{margin-bottom:12px}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid #87e4c1;outline-offset:3px}
+.translation-panel{margin:14px 0;padding:16px;border:1px solid #456475;background:#11243a;border-radius:15px}
+.translation-panel .small{margin:8px 0 12px;color:#bdcadc}
+.translation-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.translation-actions label{flex:0 0 auto}
+.translation-actions select{flex:0 0 145px;max-width:100%;padding:10px;border-radius:9px}
+.translation-actions button{width:auto;max-width:100%;font-size:13px}
+@media(max-width:540px){.translation-actions select,.translation-actions button{flex:1 1 100%;width:100%}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 </head>
@@ -269,6 +276,18 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid #87
 <button id="pdf">Guardar PDF</button>
 </div>
 <div class="tabs no-print" id="tabs" role="tablist" hidden></div><div id="proWorkspace" class="pro-workspace no-print" hidden><div><strong id="workspaceTitle">Herramientas de organización Pro</strong><p class="small" id="workspaceHint">Marcá favoritos y exportalos. Se guardan en este dispositivo.</p></div><div class="workspace-actions"><button class="secondary" type="button" id="showFavorites">Ver favoritos</button><button class="secondary" type="button" id="exportFavorites">Exportar favoritos TXT</button></div><p class="small" id="favoritesCount"></p></div>
+<div class="translation-panel no-print" id="translationTools" hidden>
+ <strong id="translationTitle">Traducción Pro de paquete guardado</strong>
+ <p class="small" id="translationHint">Abrí un paquete desde Historial. Podés traducirlo una vez y volver a abrir la traducción sin gastar nuevos cupos de generación. Hasta 30 solicitudes nuevas por mes.</p>
+ <div class="translation-actions">
+  <label id="translationLanguageLabel" for="translateTarget">Traducir a</label>
+  <select id="translateTarget" aria-label="Idioma de traducción">
+   <option value="en">English</option><option value="es">Español</option>
+  </select>
+  <button class="secondary" type="button" id="translateSaved">Traducir paquete guardado</button>
+  <button class="secondary" type="button" id="restoreOriginal" hidden>Ver original</button>
+ </div>
+</div>
 <div id="results" class="screen-only">
 <div class="empty muted">Tus resultados aparecerán acá. ✦</div>
 </div>
@@ -335,6 +354,17 @@ function dayLabel(){return uiLanguage==='en'?'Day':'Día';}
 
 
 let pack=null;
+let currentSourceId=null;
+let currentOriginalPack=null;
+let currentSourceLanguage='es';
+let showingTranslation=false;
+let translationBusy=false;
+function resetTranslationContext(){
+ currentSourceId=null;
+ currentOriginalPack=null;
+ currentSourceLanguage='es';
+ showingTranslation=false;
+}
 let tab='ideas';
 let supabaseClient=null;
 let toastTimer;
@@ -392,6 +422,19 @@ function cardText(k,v){if(k==='scripts')return scriptText(v);if(k==='ideas')retu
 function favId(k,v){return k+':'+cardText(k,v);}
 function updateWorkspace(){
  $('proWorkspace').hidden=verifiedPlan!=='pro'||!verifiedUserId||!pack;
+ const showTranslation=verifiedPlan==='pro'&&!!verifiedUserId&&!!pack;
+ $('translationTools').hidden=!showTranslation;
+ $('translateSaved').disabled=translationBusy||!currentSourceId;
+ $('translateTarget').disabled=translationBusy||!currentSourceId;
+ $('restoreOriginal').hidden=!showingTranslation;
+ $('restoreOriginal').disabled=translationBusy;
+ $('translationTitle').textContent=uiLanguage==='en'?'Pro · Translate a saved package':'Pro · Traducir paquete guardado';
+ $('translationLanguageLabel').textContent=uiLanguage==='en'?'Translate to':'Traducir a';
+ $('translationHint').textContent=uiLanguage==='en'
+ ?(currentSourceId?'Your original package stays saved. Translations are cached and do not use generation packages. Up to 30 new translation requests per month.':'Open a package from History to enable translation.')
+ :(currentSourceId?'El original queda guardado. Las traducciones se reutilizan y no consumen paquetes de generación. Hasta 30 solicitudes nuevas por mes.':'Abrí un paquete desde Historial para activar la traducción.');
+ $('translateSaved').textContent=uiLanguage==='en'?'Translate saved package':'Traducir paquete guardado';
+ $('restoreOriginal').textContent=uiLanguage==='en'?'Show original':'Ver original';
  $('favoritesCount').textContent=uiLanguage==='en'?readFavorites().length+' saved favorites on this device':readFavorites().length+' favoritos guardados en este dispositivo';
  $('workspaceTitle').textContent=uiLanguage==='en'?'Pro organization tools':'Herramientas de organización Pro';
  $('workspaceHint').textContent=uiLanguage==='en'?'Save favorites and export them. Stored only on this device.':'Guardá favoritos y exportalos. Se almacenan solo en este dispositivo.';
@@ -476,6 +519,64 @@ $('results').addEventListener('click',e=>{
 $('showFavorites').onclick=()=>{if(verifiedPlan!=='pro')return;showOnlyFavorites=!showOnlyFavorites;render();};
 $('exportFavorites').onclick=()=>{if(verifiedPlan!=='pro')return;const items=readFavorites();if(!items.length)return notice(uiLanguage==='en'?'No favorites to export.':'No hay favoritos para exportar.');save(items.map(x=>x.kind.toUpperCase()+'\\n'+x.text).join('\\n\\n────────\\n\\n'),'PromoKit_Pro_Favoritos.txt','text/plain;charset=utf-8');};
 
+
+$('restoreOriginal').onclick=()=>{
+ if(!currentOriginalPack||!currentSourceId)return;
+ pack=currentOriginalPack;
+ showingTranslation=false;showOnlyFavorites=false;
+ render();
+ setStatus(uiLanguage==='en'?'Original package restored.':'Volvimos al paquete original.','success');
+};
+$('translateSaved').onclick=async()=>{
+ if(translationBusy)return;
+ if(!currentSourceId||!currentOriginalPack){
+  setStatus(uiLanguage==='en'?'Open a saved package from History first.':'Primero abrí un paquete desde Historial.','error');return;
+ }
+ if(verifiedPlan!=='pro'||!verifiedUserId){
+  setStatus(uiLanguage==='en'?'This feature requires Pro.':'Esta función requiere Pro.','error');return;
+ }
+ const targetLanguage=$('translateTarget').value;
+ if(targetLanguage===currentSourceLanguage){
+  setStatus(uiLanguage==='en'?'Choose another language.':'Elegí un idioma diferente del original.','error');return;
+ }
+ if(!supabaseClient)return;
+ translationBusy=true;
+ const sourceId=currentSourceId;
+ const button=$('translateSaved');
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),85000);
+ updateWorkspace();
+ setStatus(uiLanguage==='en'?'Translating the saved package. This may take a minute…':'Traduciendo el paquete guardado. Puede tardar un minuto…');
+ try{
+  const session=(await supabaseClient.auth.getSession()).data?.session;
+  if(!session||session.user.id!==verifiedUserId)throw Error(uiLanguage==='en'?'Sign in with your Pro account.':'Iniciá sesión con tu cuenta Pro.');
+  const response=await fetch(ENDPOINT+'/translate-pack',{
+   method:'POST',signal:controller.signal,
+   headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},
+   body:JSON.stringify({sourceId,targetLanguage})
+  });
+  const data=await response.json();
+  if(!response.ok)throw Error(data.error||('HTTP '+response.status));
+  if(!validateClientPack(data.pack))throw Error(uiLanguage==='en'?'Translation was incomplete.':'La traducción llegó incompleta.');
+  const currentSession=(await supabaseClient.auth.getSession()).data?.session;
+  if(currentSession?.user?.id!==session.user.id||currentSourceId!==sourceId)return;
+  pack=data.pack;showingTranslation=true;tab='ideas';showOnlyFavorites=false;
+  render();
+  setStatus(uiLanguage==='en'
+   ?(data.cached?'Saved translation opened without consuming generation quota.':'Translation saved; no generation package was used.')
+   :(data.cached?'Traducción guardada recuperada sin consumir cupos de generación.':'Traducción guardada sin consumir cupos de generación.'),'success');
+  $('title').scrollIntoView({behavior:'smooth',block:'start'});
+ }catch(error){
+  setStatus((uiLanguage==='en'?'Translation: ':'Traducción: ')+
+   (error.name==='AbortError'
+    ?(uiLanguage==='en'?'The request timed out. Wait and try opening this translation again.':'Se agotó el tiempo de espera. Esperá y volvé a abrir esta traducción.')
+    :String(error.message||error)),'error');
+ }finally{
+  clearTimeout(timer);
+  translationBusy=false;
+  updateWorkspace();
+ }
+};
 $('copy').onclick=()=>pack&&copyText(allText());
 $('copyScripts').onclick=()=>pack&&copyText((pack.scripts||[]).map(scriptText).join('\n\n──────────────\n\n'));
 $('download').onclick=()=>pack&&save(allText(),'PromoKit_V18.txt','text/plain;charset=utf-8');
@@ -562,7 +663,7 @@ $('testRecovery').onclick=async()=>{
 function showSession(session){
 const nextUserId=session?.user?.id||null;
 if(nextUserId!==lastSessionUserId){
- pack=null;tab='ideas';
+ pack=null;tab='ideas';resetTranslationContext();
  $('results').innerHTML='<div class="empty muted">Tus resultados aparecerán acá. ✦</div>';
  $('printResults').innerHTML='';$('tabs').hidden=true;$('tabs').innerHTML='';
  $('actions').hidden=true;$('summary').hidden=true;
@@ -696,7 +797,7 @@ const {data:sessionData}=await supabaseClient.auth.getSession();
 const session=sessionData?.session;
 if(!session){$('dashHistory').textContent='—';area.textContent=uiLanguage==='en'?'Sign in to view your previous generations.':'Iniciá sesión para ver tus generaciones anteriores.';return;}
 const {data,error}=await supabaseClient.from('generation_history')
-.select('id,topic,platform,created_at,pack')
+.select('id,topic,platform,language,created_at,pack')
 .eq('user_id',session.user.id).order('created_at',{ascending:false}).limit(15);
 const currentSession=(await supabaseClient.auth.getSession()).data?.session;
 if(currentSession?.user?.id!==session.user.id)return;
@@ -717,6 +818,11 @@ button.className='secondary';
 button.textContent=uiLanguage==='en'?'Open saved package':'Ver paquete guardado';
 button.onclick=()=>{
  if(!validateClientPack(item.pack)){setStatus(uiLanguage==='en'?'Saved package is incomplete.':'El paquete guardado está incompleto.','error');return;}
+ currentSourceId=String(item.id);
+ currentOriginalPack=item.pack;
+ currentSourceLanguage=item.language==='en'?'en':'es';
+ showingTranslation=false;
+ $('translateTarget').value=currentSourceLanguage==='en'?'es':'en';
  pack=item.pack;tab='ideas';showOnlyFavorites=false;render();
  setStatus(uiLanguage==='en'?'Package loaded from history.':'Paquete recuperado del historial.','success');
  $('title').scrollIntoView({behavior:'smooth',block:'start'});
@@ -811,7 +917,7 @@ $('recoverPending').onclick=async()=>{
   if(!response.ok)throw Error(result.error||'HTTP '+response.status);
   if(result.state==='completed'&&validateClientPack(result.pack)){
    rememberCompletedRequest(saved.requestId,session.user.id);
-   pack=result.pack;tab='ideas';showOnlyFavorites=false;render();
+   resetTranslationContext();pack=result.pack;tab='ideas';showOnlyFavorites=false;render();
    localStorage.removeItem(pendingKey);
    setStatus('¡Paquete recuperado sin generar otro ni consumir otro cupo!','success');
    await refreshHistory();await refreshQuota();
@@ -900,6 +1006,7 @@ if(requestId&&data.historySaved){
  localStorage.removeItem(pendingKey);
  rememberCompletedRequest(requestId,session.user.id);
 }
+resetTranslationContext();
 pack=data.pack;
 tab='ideas';showOnlyFavorites=false;
 render();
@@ -917,7 +1024,7 @@ if(!preview&&requestId){
   try{
     const check=await fetch(ENDPOINT+'/request-status',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({requestId})});
     const status=await check.json();
-    if(check.ok&&status.state==='completed'&&validateClientPack(status.pack)){localStorage.removeItem(pendingKey);rememberCompletedRequest(requestId,session.user.id);pack=status.pack;tab='ideas';showOnlyFavorites=false;render();setStatus('¡Recuperamos tu paquete guardado! No se generó otro ni se gastó un cupo adicional.','success');await refreshHistory();}
+    if(check.ok&&status.state==='completed'&&validateClientPack(status.pack)){localStorage.removeItem(pendingKey);rememberCompletedRequest(requestId,session.user.id);resetTranslationContext();pack=status.pack;tab='ideas';showOnlyFavorites=false;render();setStatus('¡Recuperamos tu paquete guardado! No se generó otro ni se gastó un cupo adicional.','success');await refreshHistory();}
     else if(check.ok&&status.state==='processing')setStatus('La generación todavía podría estar procesándose. Revisá el historial y el contador antes de intentar de nuevo.','error');
     else if(check.ok&&status.state==='refunded'){localStorage.removeItem(pendingKey);setStatus('La solicitud fue reembolsada. Podés generar otra vez.','success');}
     else if(check.ok&&status.state==='completed_without_history')setStatus('El cupo figura completado pero el paquete no aparece. No vuelvas a generar: consultá soporte.','error');
