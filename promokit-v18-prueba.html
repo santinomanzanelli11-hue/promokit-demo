@@ -437,9 +437,9 @@ return Object.entries(sectionNames()).map(([k,n])=>n.toUpperCase()+'\n\n'+(pack?
 async function copyText(s){
 try{
 await navigator.clipboard.writeText(s);
-notice('¡Copiado!');
+notice(uiLanguage==='en'?'Copied!':'¡Copiado!');
 }catch{
-notice('No se pudo copiar. Probá Descargar TXT.');
+notice(uiLanguage==='en'?'Could not copy. Try downloading TXT.':'No se pudo copiar. Probá Descargar TXT.');
 }
 }
 
@@ -473,7 +473,7 @@ $('results').addEventListener('click',e=>{
  writeFavorites(items);render();
 });
 $('showFavorites').onclick=()=>{if(verifiedPlan!=='pro')return;showOnlyFavorites=!showOnlyFavorites;render();};
-$('exportFavorites').onclick=()=>{if(verifiedPlan!=='pro')return;const items=readFavorites();if(!items.length)return notice('No hay favoritos para exportar.');save(items.map(x=>x.kind.toUpperCase()+'\\n'+x.text).join('\\n\\n────────\\n\\n'),'PromoKit_Pro_Favoritos.txt','text/plain;charset=utf-8');};
+$('exportFavorites').onclick=()=>{if(verifiedPlan!=='pro')return;const items=readFavorites();if(!items.length)return notice(uiLanguage==='en'?'No favorites to export.':'No hay favoritos para exportar.');save(items.map(x=>x.kind.toUpperCase()+'\\n'+x.text).join('\\n\\n────────\\n\\n'),'PromoKit_Pro_Favoritos.txt','text/plain;charset=utf-8');};
 
 $('copy').onclick=()=>pack&&copyText(allText());
 $('copyScripts').onclick=()=>pack&&copyText((pack.scripts||[]).map(scriptText).join('\n\n──────────────\n\n'));
@@ -509,7 +509,7 @@ async function refreshQuota(){
  if(!panel||!supabaseClient)return;
  try{
   const session=(await supabaseClient.auth.getSession()).data?.session;
-  if(!session){$('quotaHeading').textContent='Iniciá sesión para consultar tu plan.';return;}
+  if(!session){$('quotaHeading').textContent=uiLanguage==='en'?'Sign in to check your plan.':'Iniciá sesión para consultar tu plan.';return;}
   const response=await fetch(ENDPOINT+'/quota',{method:'POST',headers:{Authorization:'Bearer '+session.access_token}});
   const data=await response.json();
   if(!response.ok||!data.quota)throw Error(data.error||'No disponible');
@@ -537,8 +537,8 @@ async function refreshQuota(){
   showFreeAdPreview(false);
   verifiedPlan='free';verifiedUserId=null;showOnlyFavorites=false;updateWorkspace();
   $('dashboard').hidden=true;
-  $('quotaHeading').textContent='No se pudo cargar el contador.';
-  $('quotaText').textContent='Tocá «Actualizar contador» para reintentar.';
+  $('quotaHeading').textContent=uiLanguage==='en'?'Could not load quota.':'No se pudo cargar el contador.';
+  $('quotaText').textContent=uiLanguage==='en'?'Tap Refresh quota to try again.':'Tocá «Actualizar contador» para reintentar.';
  }
 }
 $('refreshQuota').onclick=refreshQuota;
@@ -697,7 +697,7 @@ if(!session){$('dashHistory').textContent='—';area.textContent=uiLanguage==='e
 const {data,error}=await supabaseClient.from('generation_history')
 .select('id,topic,platform,created_at,pack')
 .eq('user_id',session.user.id).order('created_at',{ascending:false}).limit(15);
-if(error){$('dashHistory').textContent='—';area.textContent='No se pudo cargar el historial: '+error.message;return;}
+if(error){$('dashHistory').textContent='—';area.textContent=(uiLanguage==='en'?'Could not load history: ':'No se pudo cargar el historial: ')+error.message;return;}
 $('dashHistory').textContent=data?.length===15?'15+':String(data?.length||0);
 if(!data?.length){area.textContent=uiLanguage==='en'?'No saved generations yet.':'Todavía no hay generaciones guardadas.';return;}
 area.innerHTML='';
@@ -705,7 +705,7 @@ for(const item of data){
 const entry=document.createElement('article');
 entry.className='result';
 const title=document.createElement('h3');
-title.textContent=item.topic||'Generación sin título';
+title.textContent=item.topic||(uiLanguage==='en'?'Untitled generation':'Generación sin título');
 const info=document.createElement('p');
 info.className='small';
 info.textContent=[item.platform,new Date(item.created_at).toLocaleString()].filter(Boolean).join(' · ');
