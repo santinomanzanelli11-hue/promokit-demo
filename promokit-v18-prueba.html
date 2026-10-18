@@ -812,12 +812,7 @@ $('recoverPending').onclick=async()=>{
   else if(result.state==='completed_without_history')setStatus('El cupo figura como completado pero falta el paquete. No generes de nuevo: guardá este mensaje para soporte.','error');
   else if(result.state==='not_found'&&saved.simulation){localStorage.removeItem(pendingKey);setStatus('Simulación correcta: el identificador sobrevivió a la recarga y el servidor respondió. No se gastaron cupos.','success');}
   else if(result.state==='not_found'){
-    const age=Date.now()-Number(saved.createdAt||Date.now());
-    if(age>15*60*1000){
-      localStorage.removeItem(pendingKey);
-      setStatus('No existe una reserva para esa solicitud después de 15 minutos. Liberamos el bloqueo local; comprobá el contador antes de generar.','success');
-      await refreshQuota();
-    }else setStatus('Todavía no existe una reserva para esa solicitud. Volvé a consultar dentro de unos minutos para evitar duplicados.','error');
+    setStatus('No encontramos una reserva para esta solicitud. Conservamos el identificador para evitar duplicados. Revisá el historial antes de volver a generar.','error');
    }else setStatus('No encontramos un paquete para esa solicitud. Revisá historial y contador antes de reintentar.','error');
  }catch(e){setStatus('Recuperación: '+String(e.message||e),'error');}
  finally{b.disabled=false;}
