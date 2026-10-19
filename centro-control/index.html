@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Centro de Control · Revisado</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d12;--s1:#141821;--s2:#1c2230;--bd:#262d3d;--tx:#eef1f7;--mu:#8a93a8;--ac:#7c9cff;--ok:#3ddc97;--bad:#ff6b6b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:12px 14px calc(110px + env(safe-area-inset-bottom,0px))}
+h1{font-size:24px;margin:4px 0 2px}
+h2{font-size:12px;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin:20px 2px 8px;font-weight:600}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:10px}.sp{flex:1;min-width:0}
+.mu{color:var(--mu);font-size:13px}.li{padding:10px 0}.li+.li{border-top:1px solid var(--bd)}
+.chip{font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid currentColor;white-space:nowrap;margin-right:4px}
+.bar{height:8px;background:var(--s2);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;border-radius:9px}
+.chk{width:26px;height:26px;border-radius:50%;border:2px solid var(--mu);flex:none;background:none;color:#04210f;font-size:14px;padding:0;font-weight:700}
+.chk.on{background:var(--ok);border-color:var(--ok)}
+.done{text-decoration:line-through;color:var(--mu)}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{background:var(--ac);color:#0b0d12;border:0;border-radius:12px;padding:10px 14px;font-weight:600}
+.btn.g{background:var(--s2);color:var(--tx);border:1px solid var(--bd)}
+.btn.r{background:none;color:var(--bad);border:1px solid var(--bad)}
+.btn.s{padding:6px 10px;font-size:13px}
+.seg{display:flex;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:3px;gap:3px;margin:10px 0}
+.seg button{flex:1;border:0;background:none;padding:8px 2px;border-radius:9px;color:var(--mu);font-size:13px}
+.seg button.on{background:var(--s2);color:var(--tx)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:rgba(20,24,33,.96);border-top:1px solid var(--bd);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));backdrop-filter:blur(12px);z-index:5}
+nav button{flex:1;background:none;border:0;color:var(--mu);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:1px;padding:3px 0}
+nav button b{font-size:19px;font-weight:400}nav button.on{color:var(--ac)}
+.fab{position:fixed;right:16px;bottom:calc(78px + env(safe-area-inset-bottom,0px));z-index:6;border-radius:99px;padding:12px 20px;font-size:17px;box-shadow:0 6px 20px #0009}
+#sheet{display:none;position:fixed;inset:0;background:#000a;z-index:20;align-items:flex-end;justify-content:center}
+.pan{background:var(--s1);width:100%;max-width:640px;max-height:88%;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+label{display:block;margin:10px 0 4px}
+input,select,textarea{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:11px;color:var(--tx);font:inherit;font-size:16px}
+.cols{display:flex;align-items:flex-end;gap:8px;height:130px;margin-top:8px}
+.cols div{flex:1;text-align:center;font-size:10px;color:var(--mu);display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.cols i{display:block;border-radius:6px 6px 0 0;min-height:2px;margin:2px auto 3px;width:70%}
+.big{font-size:22px;font-weight:700}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.warn{border-color:#a9852c;background:#2a2412}
+</style></head><body><div id="app"></div><div id="sheet"></div>
+<script>
+const K='cce_v1',B={ropa:{n:'Ropa',c:'#ff9f5a',e:'👕'},tenis:{n:'Tenis IA',c:'#4cc9f0',e:'🎾'},promo:{n:'PromoKit',c:'#b388ff',e:'✨'}},bk=Object.keys(B);
+const blank=()=>({tasks:[],tx:[],goals:[],items:[],preds:[],leads:[],bk:0,tennisSync:{items:[],sourceCheckedAt:'',syncedAt:'',snapshotDigest:'',totalRegistered:0,truncated:false,strictTemporalValidated:0}});
+let D=blank(),U={tab:'home',biz:'ropa',wo:0,fv:'fin',fm:'mes',gt:'sem',m:null,cfg:0,ok:true,promoSession:null,promoData:null,promoMessage:''};
+try{const r=localStorage.getItem(K);if(r)D=Object.assign(blank(),JSON.parse(r))}catch(e){U.ok=false}
+if(!D.tennisSync||!Array.isArray(D.tennisSync.items))D.tennisSync=blank().tennisSync;
+const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9),p2=n=>String(n).padStart(2,'0');
+const fd=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()),today=()=>fd(new Date());
+const DN=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],fs=s=>{const d=new Date(s+'T00:00:00');return DN[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1)};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $$=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n*100)/100).toLocaleString('es-AR');
+const num=s=>{const n=parseFloat(String(s).replace(',','.'));return isNaN(n)?0:n};
+const g=(c,id)=>D[c].find(x=>x.id===id),sum=(l,ty)=>l.filter(x=>x.ty===ty).reduce((s,x)=>s+x.a,0);
+const chip=b=>`<span class="chip" style="color:${B[b].c}">${B[b].e} ${B[b].n}</span>`;
+const bz=()=>bk.map(k=>[k,B[k].n]);
+function save(){try{localStorage.setItem(K,JSON.stringify(D))}catch(e){U.ok=false}render()}
+const pct=b=>{const t=D.tasks.filter(x=>x.b===b);return t.length?Math.round(t.filter(x=>x.d).length/t.length*100):null};
+const fin0=(b,mk)=>{const l=D.tx.filter(x=>(!b||x.b===b)&&(!mk||x.dt.slice(0,7)===mk)),i=sum(l,'in'),o=sum(l,'out');return{i,o,n:i-o,l}};
+const bar=(p,c)=>`<div class="bar"><i style="width:${p||0}%;background:${c}"></i></div>`;
+/* ---------- formularios ---------- */
+function form(title,fs_,ok,del){U.m={title,fs:fs_,ok,del};U.cfg=0;drawSheet()}
+function drawSheet(){const s=$('#sheet'),m=U.m;
+ if(U.cfg){s.style.display='flex';const j=JSON.stringify(D);s.innerHTML=`<div class="pan"><h1 style="font-size:19px">Datos y respaldo</h1><p class="mu">Tus datos se guardan en este navegador (${U.ok?'almacenamiento activo':'⚠ almacenamiento NO disponible'}). Si borrás datos del sitio o dejás de usarlo por varios días en Safari, pueden perderse. Copiá el respaldo y guardalo en Notas, WhatsApp (chat contigo) o email.</p><label>Respaldo actual</label><textarea id="exp" rows="3" readonly>${esc(j)}</textarea><button class="btn" style="margin-top:8px;width:100%" data-a="cp">Copiar respaldo</button><label>Restaurar (pegá un respaldo)</label><textarea id="imp" rows="3"></textarea><button class="btn g" style="margin-top:8px;width:100%" data-a="rs">Restaurar datos</button><button class="btn r" style="margin-top:14px;width:100%" data-a="wipe" id="wp">Borrar todo</button><button class="btn g" style="margin-top:10px;width:100%" data-a="mx">Cerrar</button></div>`;return}
+ if(!m){s.style.display='none';s.innerHTML='';return}
+ s.style.display='flex';
+ s.innerHTML=`<div class="pan"><h1 style="font-size:19px">${esc(m.title)}</h1>${m.fs.map(f=>`<label class="mu">${esc(f.l)}</label>`+(f.t==='select'?`<select name="${f.k}">${f.o.map(o=>`<option value="${esc(o[0])}" ${o[0]==f.v?'selected':''}>${esc(o[1])}</option>`).join('')}</select>`:`<input name="${f.k}" type="${f.t||'text'}" ${f.t==='number'?'inputmode="decimal"':''} value="${esc(f.v??'')}">`)).join('')}<div class="row" style="margin-top:16px"><button class="btn g sp" data-a="mx">Cancelar</button>${m.del?'<button class="btn r" data-a="md">Eliminar</button>':''}<button class="btn sp" data-a="ms">Guardar</button></div></div>`}
+const vals=()=>{const v={};document.querySelectorAll('#sheet [name]').forEach(e=>v[e.name]=e.value);return v};
+/* ---------- altas y ediciones ---------- */
+const tf=(x)=>[{k:'t',l:'Tarea',v:x.t},{k:'b',l:'Negocio',t:'select',o:bz(),v:x.b},{k:'dt',l:'Fecha (opcional)',t:'date',v:x.dt}];
+function addTask(dt='',b=U.biz){if(U.tab!=='biz')b='ropa';form('Nueva tarea',tf({t:'',b,dt}),v=>{if(!v.t.trim())return false;D.tasks.push({id:uid(),b:v.b,t:v.t.trim(),d:false,dt:v.dt})})}
+function editTask(x){form('Editar tarea',tf(x),v=>{if(!v.t.trim())return false;Object.assign(x,{t:v.t.trim(),b:v.b,dt:v.dt})},()=>{D.tasks=D.tasks.filter(y=>y!==x)})}
+const txf=(x)=>[{k:'a',l:'Monto',t:'number',v:x.a||''},{k:'t',l:'Descripción',v:x.t},{k:'b',l:'Negocio',t:'select',o:bz(),v:x.b},{k:'dt',l:'Fecha',t:'date',v:x.dt}];
+function addTx(ty,b=U.tab==='biz'?U.biz:'ropa'){form(ty==='in'?'Nuevo ingreso':'Nuevo gasto',txf({a:'',t:'',b,dt:today()}),v=>{if(num(v.a)<=0||!v.dt)return false;D.tx.push({id:uid(),ty,b:v.b,a:num(v.a),t:v.t.trim(),dt:v.dt})})}
+function editTx(x){form(x.ty==='in'?'Editar ingreso':'Editar gasto',txf(x),v=>{if(num(v.a)<=0||!v.dt)return false;Object.assign(x,{a:num(v.a),t:v.t.trim(),b:v.b,dt:v.dt})},()=>{D.tx=D.tx.filter(y=>y!==x)})}
+const TERM={sem:'Semana',mes:'Mes',largo:'Largo plazo'};
+const gf=x=>[{k:'t',l:'Meta',v:x.t},{k:'b',l:'Negocio',t:'select',o:bz(),v:x.b},{k:'term',l:'Plazo',t:'select',o:Object.entries(TERM),v:x.term}];
+function addGoal(){form('Nueva meta',gf({t:'',b:U.tab==='biz'?U.biz:'ropa',term:U.gt}),v=>{if(!v.t.trim())return false;D.goals.push({id:uid(),b:v.b,term:v.term,t:v.t.trim(),d:false})})}
+function editGoal(x){form('Editar meta',gf(x),v=>{if(!v.t.trim())return false;Object.assign(x,{t:v.t.trim(),b:v.b,term:v.term})},()=>{D.goals=D.goals.filter(y=>y!==x)})}
+const CH=['Facebook Marketplace','WhatsApp Business','Mercado Libre'],CO=['Nuevo','Usado'];
+const itf=x=>[{k:'n',l:'Producto',v:x.n},{k:'c',l:'Estado',t:'select',o:CO.map(o=>[o,o]),v:x.c},{k:'cost',l:'Costo unitario',t:'number',v:x.cost||''},{k:'price',l:'Precio de venta',t:'number',v:x.price||''},{k:'stock',l:'Stock',t:'number',v:x.stock??1}];
+const itSet=(x,v)=>Object.assign(x,{n:v.n.trim(),c:v.c,cost:num(v.cost),price:num(v.price),stock:Math.max(0,Math.floor(num(v.stock)))});
+function addItem(){form('Nuevo producto',itf({n:'',c:'Nuevo'}),v=>{if(!v.n.trim())return false;const x={id:uid()};itSet(x,v);D.items.push(x)})}
+function editItem(x){form('Editar producto',itf(x),v=>{if(!v.n.trim())return false;itSet(x,v)},()=>{D.items=D.items.filter(y=>y!==x)})}
+function sell(x){form('Vender: '+x.n,[{k:'p',l:'Precio de venta',t:'number',v:x.price},{k:'ch',l:'Canal',t:'select',o:CH.map(o=>[o,o]),v:CH[0]},{k:'fee',l:'Comisión / envío pagado (opcional)',t:'number',v:''}],v=>{if(num(v.p)<=0||x.stock<1)return false;D.tx.push({id:uid(),ty:'in',b:'ropa',a:num(v.p),t:'Venta: '+x.n+' ('+v.ch+')',dt:today(),ch:v.ch});if(num(v.fee)>0)D.tx.push({id:uid(),ty:'out',b:'ropa',a:num(v.fee),t:'Comisión/envío: '+x.n,dt:today()});x.stock--})}
+const prf=x=>[{k:'m',l:'Partido (Jugador A vs Jugador B)',v:x.m},{k:'pk',l:'Mi predicción (ganador)',v:x.pk},{k:'c',l:'Circuito',t:'select',o:[['ATP','ATP'],['Challenger','Challenger']],v:x.c},{k:'dt',l:'Fecha',t:'date',v:x.dt}];
+function addPred(){form('Nuevo partido',prf({m:'',pk:'',c:'ATP',dt:today()}),v=>{if(!v.m.trim()||!v.pk.trim())return false;D.preds.push({id:uid(),m:v.m.trim(),pk:v.pk.trim(),c:v.c,dt:v.dt,res:'',createdAt:new Date().toISOString()})})}
+function editPred(x){if(x.res||x.settledAt){window.alert('Este pronóstico ya fue evaluado y no se puede modificar. Podés corregir el resultado, pero la predicción original queda protegida.');return}form('Editar partido',prf(x),v=>{if(!v.m.trim()||!v.pk.trim())return false;Object.assign(x,{m:v.m.trim(),pk:v.pk.trim(),c:v.c,dt:v.dt})},()=>{D.preds=D.preds.filter(y=>y!==x)})}
+const ST=['Contactado','En prueba','Cliente','Descartado'];
+const lf=x=>[{k:'n',l:'Nombre / usuario',v:x.n},{k:'s',l:'Estado',t:'select',o:ST.map(o=>[o,o]),v:x.s},{k:'nt',l:'Nota',v:x.nt}];
+function addLead(){form('Nuevo contacto',lf({n:'',s:ST[0],nt:''}),v=>{if(!v.n.trim())return false;D.leads.push({id:uid(),n:v.n.trim(),s:v.s,nt:v.nt})})}
+function editLead(x){form('Editar contacto',lf(x),v=>{if(!v.n.trim())return false;Object.assign(x,{n:v.n.trim(),s:v.s,nt:v.nt})},()=>{D.leads=D.leads.filter(y=>y!==x)})}
+const SEED=[['ropa','Fotografiar y listar los primeros 10 productos'],['ropa','Definir el precio de cada producto (costo + margen)'],['ropa','Publicar en Facebook Marketplace'],['ropa','Armar el catálogo de WhatsApp Business'],['ropa','Publicar en Mercado Libre'],['ropa','Avisar a mis contactos que ya vendo'],['tenis','Registrar mi predicción de cada partido antes de que empiece'],['tenis','Cargar el resultado de los partidos terminados'],['tenis','Definir muestra mínima y métrica de validación'],['tenis','Revisar los errores y anotar mejoras técnicas'],['promo','Definir cliente ideal y propuesta de valor'],['promo','Probar el generador con 5 casos reales (ES e EN)'],['promo','Publicar 3 contenidos mostrando el producto'],['promo','Contactar a 10 creadores para una prueba gratuita']];
+/* ---------- acciones ---------- */
+const A={
+tab:d=>{U.tab=d.v;scrollTo(0,0);render()},gob:d=>{U.tab='biz';U.biz=d.v;scrollTo(0,0);render()},
+set:d=>{U[d.k]=d.v;render()},wk:d=>{U.wo=d.v==='0'?0:U.wo+ +d.v;render()},
+tog:d=>{const x=g(d.c||'tasks',d.id);x.d=!x.d;save()},tod:d=>{g('tasks',d.id).dt=today();save()},
+edT:d=>editTask(g('tasks',d.id)),edX:d=>editTx(g('tx',d.id)),edG:d=>editGoal(g('goals',d.id)),edI:d=>editItem(g('items',d.id)),edP:d=>editPred(g('preds',d.id)),edL:d=>editLead(g('leads',d.id)),
+sell:d=>sell(g('items',d.id)),res:d=>{const x=g('preds',d.id);if(d.v&&!x.settledAt)x.settledAt=new Date().toISOString();x.res=d.v;save()},
+addT:d=>addTask(d.dt||''),addX:d=>addTx(d.v),addG:()=>addGoal(),addI:()=>addItem(),addP:()=>addPred(),addL:()=>addLead(),
+fab:()=>U.tab==='fin'?addTx('in'):U.tab==='goals'?addGoal():addTask(),
+seed:()=>{SEED.forEach(s=>D.tasks.push({id:uid(),b:s[0],t:s[1],d:false,dt:''}));save()},
+mx:()=>{U.m=null;U.cfg=0;drawSheet()},ms:()=>{if(U.m.ok(vals())===false)return;U.m=null;drawSheet();save()},md:()=>{U.m.del();U.m=null;drawSheet();save()},
+cfg:()=>{U.m=null;U.cfg=1;drawSheet()},
+cp:async()=>{const t=$('#exp'),b=$('[data-a="cp"]');let copied=false;try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(t.value);copied=true}}catch(e){}if(!copied){try{t.focus();t.select();copied=document.execCommand('copy')}catch(e){}}if(copied){D.bk=Date.now();try{localStorage.setItem(K,JSON.stringify(D))}catch(e){U.ok=false}b.textContent='Copiado ✓'}else{b.textContent='No se copió: seleccioná el texto y copialo manualmente'}},
+rs:()=>{try{const o=JSON.parse($('#imp').value);if(!o||!['tasks','tx','goals','items','preds','leads'].every(k=>Array.isArray(o[k])))throw 0;D=Object.assign(blank(),o);U.promoSession=null;U.promoData=null;if(!D.tennisSync||!Array.isArray(D.tennisSync.items))D.tennisSync=blank().tennisSync;U.cfg=0;drawSheet();save()}catch(e){$('[data-a="rs"]').textContent='Respaldo inválido'}},
+wipe:()=>{const b=$('#wp');if(b.dataset.s){D=blank();U.cfg=0;drawSheet();save()}else{b.dataset.s=1;b.textContent='Tocá otra vez para confirmar'}}};
+document.addEventListener('click',e=>{if(e.target.id==='sheet'){A.mx();return}const el=e.target.closest('[data-a]');if(el&&A[el.dataset.a])A[el.dataset.a](el.dataset)});
+/* ---------- vistas ---------- */
+const taskRow=(x,ex='')=>`<div class="li row"><button class="chk ${x.d?'on':''}" data-a="tog" data-id="${x.id}">${x.d?'✓':''}</button><div class="sp" data-a="edT" data-id="${x.id}"><div class="${x.d?'done':''}">${esc(x.t)}</div><div class="mu">${chip(x.b)}${x.dt?fs(x.dt):''}</div></div>${ex}</div>`;
+const sec=(h,l)=>l.length?`<h2>${h}</h2><div class="card">${l.map(x=>taskRow(x,x.d?'':`<button class="btn g s" data-a="tod" data-id="${x.id}">Hoy</button>`)).join('')}</div>`:'';
+const empty=()=>`<div class="card"><b>Todavía no hay tareas</b><p class="mu">Podés crearlas con el botón +, o cargar una lista inicial sugerida (sin completar, 0% de avance) y editarla a tu gusto.</p><button class="btn" data-a="seed">Cargar tareas iniciales</button></div>`;
+const seg=(k,o)=>`<div class="seg">${o.map(x=>`<button class="${U[k]===x[0]?'on':''}" data-a="set" data-k="${k}" data-v="${x[0]}">${x[1]}</button>`).join('')}</div>`;
+function rec(){const t=today();return bk.map(b=>{const ts=D.tasks.filter(x=>x.b===b&&!x.d),due=ts.filter(x=>x.dt&&x.dt<=t).length,inc=sum(D.tx.filter(x=>x.b===b),'in');let p=due*2+Math.min(ts.length,5),r=[];
+ if(due)r.push(due+' tarea(s) vencidas o para hoy');
+ if(!inc){p+=3;r.push('todavía sin ingresos registrados')}
+ if(b==='ropa'){p+=1;r.push('es el camino más corto a la primera venta');if(!D.items.length)r.push('aún sin productos cargados')}
+ if(b==='tenis'){const n=D.preds.filter(x=>x.res).length;if(n<100){p+=2;r.push('solo '+n+' partidos evaluados (referencia sugerida: 100+)')}}
+ if(b==='promo'&&!D.leads.length){p+=1;r.push('sin contactos registrados')}
+ return{b,p,r}}).sort((a,c)=>c.p-a.p)}
+function home(){const t=today(),td=D.tasks.filter(x=>x.dt===t),dn=td.filter(x=>x.d).length,od=D.tasks.filter(x=>!x.d&&x.dt&&x.dt<t).length,has=D.tasks.length+D.tx.length+D.items.length+D.preds.length;
+ const R=rec(),old=has&&Date.now()-D.bk>6048e5;
+ return `<div class="row"><div class="sp"><h1>Centro de Control</h1><div class="mu">${fs(t)}</div></div><button class="btn g s" data-a="cfg">⚙ Datos</button></div>
+${!U.ok?'<div class="card warn mu">⚠ Este navegador no permite guardar datos. Usá el respaldo manual (⚙ Datos).</div>':old?'<div class="card warn mu">Hace más de 7 días que no hacés respaldo. Tocá ⚙ Datos para copiarlo.</div>':''}
+<div class="card"><div class="row"><div class="sp"><b>Hoy</b><div class="mu">${td.length?dn+' de '+td.length+' tareas completadas':'Sin tareas asignadas a hoy'}${od?' · '+od+' vencidas':''}</div></div><button class="btn s" data-a="tab" data-v="today">Ver</button></div>${td.length?bar(dn/td.length*100,'var(--ok)'):''}</div>
+<h2>Conexiones</h2><div class="card"><div class="li row"><div class="sp"><b>🎾 SportAi</b><div class="mu">${D.tennisSync.syncedAt?'Última importación: '+esc(new Date(D.tennisSync.syncedAt).toLocaleString('es-AR')):'Sin exportación importada'}</div></div><button class="btn g s" data-a="gob" data-v="tenis">Ver</button></div><div class="li row"><div class="sp"><b>✨ PromoKit</b><div class="mu">${U.promoData?'Consulta realizada · '+U.promoData.total+' generaciones guardadas':U.promoSession?'Sesión activa · sin actualizar':'Cuenta no conectada'}</div></div><button class="btn g s" data-a="gob" data-v="promo">Ver</button></div></div>
+<h2>Negocios</h2>${bk.map(b=>{const p=pct(b),f=fin0(b),pe=D.tasks.filter(x=>x.b===b&&!x.d).length;return `<div class="card" data-a="gob" data-v="${b}"><div class="row"><span style="font-size:24px">${B[b].e}</span><div class="sp"><b>${B[b].n}</b><div class="mu">${pe} tareas pendientes</div></div><b style="color:${B[b].c}">${p===null?'—':p+'%'}</b></div><div style="margin-top:10px">${bar(p,B[b].c)}</div><div class="row mu" style="margin-top:8px"><span class="sp">Ingresos ${$$(f.i)}</span><span>Ganancia ${$$(f.n)}</span></div></div>`}).join('')}
+<h2>Qué priorizar</h2>${has?`<div class="card"><div class="mu">Prioridad sugerida</div><div class="big" style="color:${B[R[0].b].c}">${B[R[0].b].e} ${B[R[0].b].n}</div><ul style="margin:8px 0 0;padding-left:18px" class="mu">${R[0].r.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div class="card mu">${R.slice(1).map((x,i)=>`<div class="li"><b style="color:${B[x.b].c}">${i+2}. ${B[x.b].n}</b> — ${x.r.join('; ')||'sin alertas'}</div>`).join('')}<div style="margin-top:8px;font-size:12px">Regla simple y transparente: suman puntos las tareas vencidas, no tener ingresos aún, y la poca validación de datos. Es una guía, la decisión es tuya.</div></div>`:empty()}`}
+function hoy(){const t=today(),T=D.tasks,od=T.filter(x=>!x.d&&x.dt&&x.dt<t),td=T.filter(x=>x.dt===t).sort((a,b)=>a.d-b.d),bl=T.filter(x=>!x.d&&!x.dt),cd=T.filter(x=>x.d&&!x.dt),dn=td.filter(x=>x.d).length;
+ return `<h1>Hoy</h1><div class="mu">${fs(t)} · ${dn}/${td.length} completadas</div>${td.length?`<div style="margin:10px 0">${bar(dn/td.length*100,'var(--ok)')}</div>`:''}${sec('Vencidas',od)}${sec('Para hoy',td)}${sec('Sin fecha (pendientes)',bl)}${sec('Completadas sin fecha',cd)}${T.length?(td.length||od.length?'':'<p class="mu">No hay tareas para hoy. Tocá “Hoy” en una pendiente o creá una con +.</p>'):empty()}`}
+function week(){const b=new Date();b.setDate(b.getDate()-((b.getDay()+6)%7)+U.wo*7);const ds=[...Array(7)].map((_,i)=>{const d=new Date(b);d.setDate(b.getDate()+i);return fd(d)}),t=today(),all=D.tasks.filter(x=>ds.includes(x.dt)),cnt=bk.map(k=>all.filter(x=>x.b===k).length),mx=Math.max(...cnt);
+ return `<h1>Semana</h1><div class="row"><button class="btn g s" data-a="wk" data-v="-1">‹</button><div class="sp mu" style="text-align:center">${fs(ds[0])} – ${fs(ds[6])}</div><button class="btn g s" data-a="wk" data-v="1">›</button><button class="btn g s" data-a="wk" data-v="0">Hoy</button></div>
+<div class="card" style="margin-top:10px"><b>Balance de la semana</b>${all.length?`<div style="display:flex;height:10px;border-radius:9px;overflow:hidden;margin:8px 0">${bk.map((k,i)=>`<i style="width:${cnt[i]/all.length*100}%;background:${B[k].c}"></i>`).join('')}</div><div class="mu">${bk.map((k,i)=>B[k].e+' '+cnt[i]).join(' · ')}${mx/all.length>.6&&bk.some((k,i)=>!cnt[i])?'<br>Tu semana está concentrada en un solo negocio.':''}</div>`:'<div class="mu">Sin tareas con fecha esta semana.</div>'}</div>
+${ds.map(d=>{const l=D.tasks.filter(x=>x.dt===d);return `<div class="card" ${d===t?'style="border-color:var(--ac)"':''}><div class="row"><b class="sp">${fs(d)}${d===t?' · hoy':''}</b><button class="btn g s" data-a="addT" data-dt="${d}">+</button></div>${l.map(x=>taskRow(x)).join('')||'<div class="mu">Libre</div>'}</div>`}).join('')}`}
+function fin(){const mk=U.fm==='mes'?today().slice(0,7):'',T=fin0('',mk);
+ const head=`<h1>Dinero</h1>${seg('fv',[['fin','Finanzas'],['st','Estadísticas']])}`;
+ if(U.fv==='st')return head+stats();
+ return head+seg('fm',[['mes','Este mes'],['tot','Total']])+`<div class="card g3"><div><div class="mu">Ingresos</div><div class="big" style="color:var(--ok)">${$$(T.i)}</div></div><div><div class="mu">Gastos</div><div class="big" style="color:var(--bad)">${$$(T.o)}</div></div><div><div class="mu">Ganancia</div><div class="big">${$$(T.n)}</div></div></div>
+<div class="row"><button class="btn sp" data-a="addX" data-v="in">+ Ingreso</button><button class="btn g sp" data-a="addX" data-v="out">+ Gasto</button></div>
+<h2>Por negocio</h2>${bk.map(b=>{const f=fin0(b,mk);return `<div class="card"><div class="row"><b class="sp" style="color:${B[b].c}">${B[b].e} ${B[b].n}</b><b>${$$(f.n)}</b></div><div class="mu">Ingresos ${$$(f.i)} · Gastos ${$$(f.o)}${f.i?' · Margen '+Math.round(f.n/f.i*100)+'%':''}</div></div>`}).join('')}
+<h2>Movimientos</h2><div class="card">${T.l.slice().sort((a,b)=>b.dt.localeCompare(a.dt)).slice(0,20).map(x=>`<div class="li row" data-a="edX" data-id="${x.id}"><div class="sp"><div>${esc(x.t||(x.ty==='in'?'Ingreso':'Gasto'))}</div><div class="mu">${chip(x.b)}${fs(x.dt)}</div></div><b style="color:var(--${x.ty==='in'?'ok':'bad'})">${x.ty==='in'?'+':'-'}${$$(x.a)}</b></div>`).join('')||'<div class="mu">Sin movimientos. Registrá solo montos reales.</div>'}</div>`}
+function stats(){const ms=[...Array(6)].map((_,i)=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-5+i);return d.getFullYear()+'-'+p2(d.getMonth()+1)}),vs=ms.map(m=>fin0('',m).n),mx=Math.max(...vs.map(Math.abs),1);
+ const ev=D.preds.filter(x=>x.res),ok=ev.filter(x=>x.res==='ok').length,ac=ev.length?ok/ev.length:0,mg=ev.length?1.96*Math.sqrt(ac*(1-ac)/ev.length)*100:0;
+ const sales=D.tx.filter(x=>x.b==='ropa'&&x.ty==='in'&&x.ch);
+ return `<div class="card"><b>Ganancia mensual (últimos 6 meses)</b><div class="cols">${vs.map((v,i)=>`<div><span>${v?$$(v):''}</span><i style="height:${Math.abs(v)/mx*90}px;background:var(--${v<0?'bad':'ok'})"></i>${ms[i].slice(5)}</div>`).join('')}</div></div>
+<div class="card"><b>Ingresos y gastos por negocio (total)</b>${bk.map(b=>{const f=fin0(b),m=Math.max(f.i,f.o,1);return `<div class="li"><div class="mu">${B[b].e} ${B[b].n}</div>${bar(f.i/m*100,'var(--ok)')}<div style="height:4px"></div>${bar(f.o/m*100,'var(--bad)')}<div class="mu">Ingresos ${$$(f.i)} · Gastos ${$$(f.o)}</div></div>`}).join('')}</div>
+<div class="card"><b>Avance por tareas</b>${bk.map(b=>{const t=D.tasks.filter(x=>x.b===b),d=t.filter(x=>x.d).length;return `<div class="li"><div class="row"><span class="sp mu">${B[b].e} ${B[b].n}</span><span>${d}/${t.length}${t.length?' ('+Math.round(d/t.length*100)+'%)':''}</span></div>${bar(t.length?d/t.length*100:0,B[b].c)}</div>`}).join('')}</div>
+<div class="card"><b>🎾 SportAi · exportación oficial</b><div class="mu">${tennisStatsLine()}</div></div>
+ <div class="card"><b>✨ PromoKit · cuenta</b><div class="mu">${U.promoData?'Generaciones guardadas: '+U.promoData.total+' · Este mes (UTC): '+U.promoData.monthTotal:'Sin sesión conectada. Entrá en Negocios → PromoKit.'}</div></div>
+ <div class="card"><b>🎾 Predictor manual</b><div class="mu">${ev.length?`${ok} aciertos de ${ev.length} evaluados = <b style="color:var(--tx)">${Math.round(ac*100)}%</b> (±${Math.round(mg)} pts, 95%)`:'Sin partidos evaluados.'}</div></div>
+<div class="card"><b>👕 Ventas</b><div class="mu">${sales.length?sales.length+' ventas · ticket promedio '+$$(sales.reduce((s,x)=>s+x.a,0)/sales.length)+'<br>'+CH.map(c=>c+': '+sales.filter(x=>x.ch===c).length).join(' · '):'Sin ventas registradas.'}</div></div>
+<div class="card"><b>✨ Contactos</b><div class="mu">${D.leads.length?ST.map(s=>s+': '+D.leads.filter(x=>x.s===s).length).join(' · '):'Sin contactos registrados.'}</div></div>`}
+function goals(){const l=D.goals.filter(x=>x.term===U.gt),dn=l.filter(x=>x.d).length;
+ return `<h1>Metas</h1>${seg('gt',Object.entries(TERM))}<div class="mu">${l.length?dn+' de '+l.length+' cumplidas':'Sin metas en este plazo'}</div>${bk.map(b=>{const m=l.filter(x=>x.b===b);return m.length?`<h2>${B[b].e} ${B[b].n}</h2><div class="card">${m.map(goalRow).join('')}</div>`:''}).join('')}<p class="mu">Tip: escribí metas medibles, por ejemplo “Concretar 3 ventas esta semana”.</p>`}
+const goalRow=x=>`<div class="li row"><button class="chk ${x.d?'on':''}" data-a="tog" data-c="goals" data-id="${x.id}">${x.d?'✓':''}</button><div class="sp ${x.d?'done':''}" data-a="edG" data-id="${x.id}">${esc(x.t)}<div class="mu">${TERM[x.term]}</div></div></div>`;
+function neg(){const b=U.biz,p=pct(b),ts=D.tasks.filter(x=>x.b===b),pe=ts.filter(x=>!x.d),f=fin0(b),gl=D.goals.filter(x=>x.b===b);
+ return `<h1>Negocios</h1><div class="seg">${bk.map(k=>`<button class="${k===b?'on':''}" data-a="set" data-k="biz" data-v="${k}">${B[k].e} ${B[k].n}</button>`).join('')}</div>
+<div class="card"><div class="row"><b class="sp">Avance (tareas completadas)</b><b style="color:${B[b].c}">${p===null?'—':p+'%'}</b></div><div style="margin:8px 0">${bar(p,B[b].c)}</div><div class="mu">${ts.length?ts.filter(x=>x.d).length+' de '+ts.length+' tareas':'Aún no hay tareas cargadas'} · Ingresos ${$$(f.i)} · Ganancia ${$$(f.n)}</div></div>
+${{ropa,tenis,promo}[b]()}
+<h2>Tareas</h2><div class="card">${pe.map(x=>taskRow(x)).join('')||'<div class="mu">Sin tareas pendientes.</div>'}<button class="btn g" style="margin-top:8px;width:100%" data-a="addT">+ Agregar tarea</button></div>
+<h2>Completadas</h2><div class="card">${ts.filter(x=>x.d).map(x=>taskRow(x)).join('')||'<div class="mu">Todavía no hay tareas completadas.</div>'}</div>
+ <h2>Metas</h2><div class="card">${gl.map(goalRow).join('')||'<div class="mu">Sin metas.</div>'}<button class="btn g" style="margin-top:8px;width:100%" data-a="addG">+ Agregar meta</button></div>`}
+function ropa(){const st=D.items.reduce((s,x)=>s+x.stock,0);return `<h2>Inventario</h2><div class="card"><div class="mu">${D.items.length} productos · ${st} unidades en stock</div>${D.items.map(x=>`<div class="li row"><div class="sp" data-a="edI" data-id="${x.id}"><div>${esc(x.n)} <span class="mu">· ${x.c}</span></div><div class="mu">Precio ${$$(x.price)} · Costo ${$$(x.cost)} · Margen ${$$(x.price-x.cost)} · Stock ${x.stock}</div></div>${x.stock>0?`<button class="btn s" data-a="sell" data-id="${x.id}">Vender</button>`:'<span class="mu">Agotado</span>'}</div>`).join('')}<button class="btn g" style="margin-top:8px;width:100%" data-a="addI">+ Agregar producto</button><div class="mu" style="margin-top:8px;font-size:12px">Al vender se registra el ingreso. Cargá aparte, en Dinero, lo que gastás al comprar mercadería.</div></div>`}
+function tenis(){const ev=D.preds.filter(x=>x.res),ok=ev.filter(x=>x.res==='ok').length,pn=D.preds.filter(x=>!x.res);
+ const cc=c=>{const e=ev.filter(x=>x.c===c);return c+': '+(e.length?Math.round(e.filter(x=>x.res==='ok').length/e.length*100)+'% ('+e.length+')':'—')};
+ return tennisConnectionUI()+`<h2>Predicciones cargadas a mano (separadas de SportAi)</h2><div class="card g3"><div><div class="mu">Evaluados</div><div class="big">${ev.length}</div></div><div><div class="mu">Aciertos</div><div class="big">${ok}</div></div><div><div class="mu">Precisión</div><div class="big">${ev.length?Math.round(ok/ev.length*100)+'%':'—'}</div></div></div><div class="card mu">${cc('ATP')} · ${cc('Challenger')}<br><span style="font-size:12px">Con pocos partidos el resultado es poco confiable. Sugerencia: validá con 100+ partidos y compará contra una base simple (siempre el mejor rankeado) antes de cobrar los 15 USD.</span></div>
+<div class="card">${D.preds.slice().sort((a,b)=>b.dt.localeCompare(a.dt)).slice(0,30).map(x=>`<div class="li"><div class="row"><div class="sp" data-a="edP" data-id="${x.id}"><div>${esc(x.m)}</div><div class="mu">${x.c} · ${fs(x.dt)} · Predije: <b>${esc(x.pk)}</b>${x.createdAt?' · Registrado: '+esc(new Date(x.createdAt).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):''}</div></div>${x.res?`<button class="chip" style="background:none;color:var(--${x.res==='ok'?'ok':'bad'})" data-a="res" data-id="${x.id}" data-v="">${x.res==='ok'?'Acierto':'Error'}</button>`:`<button class="btn s" data-a="res" data-id="${x.id}" data-v="ok">✓ Acertó</button><button class="btn r s" data-a="res" data-id="${x.id}" data-v="fail">✗</button>`}</div></div>`).join('')||'<div class="mu">Sin partidos. Registrá la predicción antes del partido. La hora de registro queda guardada localmente, pero no es una prueba independiente.</div>'}<button class="btn g" style="margin-top:8px;width:100%" data-a="addP">+ Registrar partido</button></div>`}
+function promo(){return promoConnectionUI()+`<h2>Contactos y clientes (carga manual)</h2><div class="card"><div class="mu">${ST.map(s=>s+': '+D.leads.filter(x=>x.s===s).length).join(' · ')}</div>${D.leads.map(x=>`<div class="li" data-a="edL" data-id="${x.id}"><div class="row"><b class="sp">${esc(x.n)}</b><span class="chip" style="color:${x.s==='Cliente'?'var(--ok)':'var(--mu)'}">${x.s}</span></div>${x.nt?`<div class="mu">${esc(x.nt)}</div>`:''}</div>`).join('')}<button class="btn g" style="margin-top:8px;width:100%" data-a="addL">+ Agregar contacto</button></div>`}
+
+/* ---------- CONEXIONES DE SOLO LECTURA ---------- */
+// El sitio privado SportAi no ofrece acceso externo anónimo. Se importa su
+// exportación oficial /api/evaluation?download=1, sin inventar coincidencias.
+const tennisStatsLine=()=>{
+ const t=D.tennisSync||blank().tennisSync, a=t.items||[], linked=a.filter(x=>x.status==='linked_exploratory'&&typeof x.accuracy==='number'),
+ score=linked.reduce((n,x)=>n+x.accuracy,0), pending=a.length-linked.length;
+ if(!t.syncedAt)return 'Sin archivo importado. Importá el seguimiento oficial desde Tenis IA.';
+ return a.length+' registros importados · '+linked.length+' comparaciones exploratorias · '+pending+' sin puntuación válida · '+
+ (linked.length?'Exactitud exploratoria '+Math.round(score/linked.length*100)+'%':'Sin precisión calculable')+
+ ' · Validaciones temporales estrictas: '+Number(t.strictTemporalValidated||0)+'.';
+};
+function tennisConnectionUI(){
+ const t=D.tennisSync,rows=t.items||[];
+ return `<h2>Conexión con SportAi</h2><div class="card"><b>🎾 Seguimiento oficial de predicciones</b><p class="mu">SportAi tiene acceso privado. Exportá su informe JSON desde <code>/api/evaluation?download=1</code> dentro de tu sitio privado e importalo acá. No se agregan resultados inventados ni se usa información futura para pronosticar.</p>
+ <label class="mu" for="tennisFile">Importar el JSON de SportAi (reemplaza la importación anterior)</label><input id="tennisFile" type="file" accept=".json,application/json">
+ <div class="mu" id="tennisMsg" style="margin-top:9px" role="status">${t.syncedAt?'Última importación: '+esc(new Date(t.syncedAt).toLocaleString('es-AR')):'Todavía no sincronizado'}</div>
+ <div class="row" style="margin:12px 0 8px;flex-wrap:wrap"><a class="btn g s" style="text-decoration:none" href="https://github.com/santinomanzanelli11-hue/SportAi" target="_blank" rel="noopener noreferrer">Ver código de SportAi ↗</a></div>
+ <div class="mu">${tennisStatsLine()}${t.truncated?'<br>El servidor devolvió como máximo 1.000 registros; no representan todo el historial.':''}${t.sourceCheckedAt?'<br>Informe de origen: '+esc(t.sourceCheckedAt):''}</div></div>
+ ${rows.length?`<h2>Últimos 15 pronósticos importados</h2><div class="card">${rows.slice(0,15).map(x=>`<div class="li"><b>${esc(x.match)}</b><div class="mu">${esc(x.circuit)} · ${esc(x.date||'Fecha no informada')} · ${esc(x.status==='linked_exploratory'?'Vinculación exploratoria':x.status||'Pendiente')} · ${esc(x.pick)}${x.probability===null?'':' · '+Math.round(x.probability*100)+'% de victoria para A'}</div></div>`).join('')}</div>`:''}
+ <p class="mu">Los registros de SportAi se mantienen separados de las anotaciones manuales. Sus predicciones importadas son de solo lectura; la importación no modifica ni el modelo ni su base privada.</p>`;
+}
+function parseSportAiExport(obj){
+ if(!obj||obj.status!=='available'||!Array.isArray(obj.items)||typeof obj.totalRegistered!=='number')throw Error('No parece ser una exportación oficial disponible de /api/evaluation.');
+ if(obj.items.length>1000||obj.totalRegistered<obj.items.length)throw Error('El informe tiene una estructura inesperada.');
+ const seen=new Set(), rows=[];
+ for(const entry of obj.items){
+  if(!entry||typeof entry!=='object'||!entry.forecast||!entry.review)throw Error('Faltan datos de un pronóstico.');
+  const f=entry.forecast,r=entry.review,input=f.input||{};
+  if(typeof f.id!=='string'||!f.id||seen.has(f.id))throw Error('ID repetido o inválido en la exportación.');
+  seen.add(f.id);
+  const a=typeof input.a==='string'?input.a:(input.a?.name||input.a?.label||'Jugador A');
+  const b=typeof input.b==='string'?input.b:(input.b?.name||input.b?.label||'Jugador B');
+  const probability=typeof f.prediction?.p==='number'&&f.prediction.p>=0&&f.prediction.p<=1?f.prediction.p:null;
+  const reviewed=r.status==='linked_exploratory'&&typeof r.baseline?.winnerAccuracy==='number';
+  rows.push({id:f.id,match:String(a)+' vs '+String(b),date:String(input.date||'').slice(0,16),circuit:String(input.circuit||''),
+   pick:probability===null?'Probabilidad no disponible':probability===.5?'Pronóstico 50/50':String(probability>.5?a:b),
+   probability,status:String(r.status||'pending'),accuracy:reviewed?r.baseline.winnerAccuracy:null,
+   createdAt:String(f.created||''),modelVersion:String(f.prediction?.sportsCalibration?.version||'')});
+ }
+ return {items:rows,sourceCheckedAt:String(obj.checkedAt||''),syncedAt:new Date().toISOString(),
+  snapshotDigest:String(obj.snapshotDigest||''),totalRegistered:obj.totalRegistered,
+  truncated:!!obj.truncated,strictTemporalValidated:Number(obj.summary?.strictTemporalValidated||0)};
+}
+// Los datos de cuenta de PromoKit quedan en memoria; nunca se guardan contraseñas,
+// tokens ni el historial de otra persona en localStorage o en respaldos.
+const PROMO_SB='https://jlpbmyxpxkktodapunkn.supabase.co';
+// La clave publishable pública ya se utiliza en la interfaz oficial de PromoKit V18.
+const PROMO_PUBLIC_KEY='sb_publishable_bWuuKJdyxFNHrTIoXCtweg_-6TSMPBz';
+function promoConnectionUI(){
+ const session=U.promoSession,d=U.promoData;
+ return `<h2>Conexión con PromoKit</h2><div class="card"><b>✨ Historial real de PromoKit</b><p class="mu">Iniciá sesión con tu cuenta de PromoKit para leer tus generaciones guardadas en Supabase. La contraseña va directamente a Supabase y no se guarda en este Centro de Control. Los contactos y las ventas son registros separados.</p>
+ ${session?`<div class="mu">Conectado: ${esc(session.email||'Cuenta autenticada')} · sesión temporal</div><div class="row" style="margin:12px 0;flex-wrap:wrap"><button class="btn s" data-a="promoRefresh" id="promoRefresh">Actualizar generaciones</button><button class="btn g s" data-a="promoLogout">Desconectar</button></div>`:
+ `<label class="mu" for="promoEmail">Correo de PromoKit</label><input id="promoEmail" type="email" autocomplete="username" placeholder="Tu correo">
+ <label class="mu" for="promoPassword">Contraseña de PromoKit</label><input id="promoPassword" type="password" autocomplete="current-password" placeholder="Tu contraseña">
+ <button class="btn" style="margin-top:12px;width:100%" data-a="promoLogin" id="promoLogin">Conectar cuenta</button>`}
+ <div class="mu" role="status" id="promoMsg" style="margin:10px 0">${esc(U.promoMessage)}</div>
+ ${d?`<div class="g3" style="margin:10px 0"><div><div class="mu">Generaciones</div><div class="big">${d.total}</div></div><div><div class="mu">Este mes UTC</div><div class="big">${d.monthTotal}</div></div><div><div class="mu">Actualizado</div><div style="font-size:12px">${esc(new Date(d.syncedAt).toLocaleString('es-AR'))}</div></div></div><div class="mu">Solo historial guardado. No mide compradores ni ingresos.</div>${d.items.length?`<h2>Últimas generaciones</h2>${d.items.slice(0,12).map(x=>`<div class="li"><b>${esc(x.topic||'Sin tema')}</b><div class="mu">${esc(x.platform||'')} · ${esc(x.language||'')} · ${esc(new Date(x.created_at).toLocaleDateString('es-AR'))}</div></div>`).join('')}`:''}`:''}
+ <a class="btn g s" style="display:inline-block;margin-top:12px;text-decoration:none" href="https://github.com/santinomanzanelli11-hue/promokit-demo" target="_blank" rel="noopener noreferrer">Abrir proyecto PromoKit ↗</a></div>`;
+}
+async function authPromo(email,password){
+ const res=await fetch(PROMO_SB+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:PROMO_PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password}),cache:'no-store'});
+ const body=await res.json().catch(()=>({}));if(!res.ok||!body.access_token||!body.user?.id)throw Error(body.msg||body.error_description||body.message||'No se pudo iniciar sesión.');
+ return {access:body.access_token,refresh:body.refresh_token,userId:body.user.id,email:body.user.email||email,expiresAt:Date.now()+Math.max(0,Number(body.expires_in||3600))*1000};
+}
+async function ensurePromoToken(){
+ const s=U.promoSession;if(!s)throw Error('Iniciá sesión para sincronizar.');
+ if(Date.now()<s.expiresAt-60000)return s;
+ const res=await fetch(PROMO_SB+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:PROMO_PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh}),cache:'no-store'});
+ const data=await res.json().catch(()=>({}));if(!res.ok||!data.access_token||data.user?.id!==s.userId)throw Error('Sesión vencida. Desconectá e iniciá sesión otra vez.');
+ s.access=data.access_token;s.refresh=data.refresh_token||s.refresh;s.expiresAt=Date.now()+Number(data.expires_in||3600)*1000;return s;
+}
+async function fetchPromoHistory(){
+ const s=await ensurePromoToken();
+ const fetchRows=async(extra={},limit=200)=>{
+  const url=new URL(PROMO_SB+'/rest/v1/generation_history');
+  Object.entries({select:'id,topic,platform,language,created_at',user_id:'eq.'+s.userId,order:'created_at.desc',limit:String(limit),...extra}).forEach(([k,v])=>url.searchParams.set(k,v));
+  const res=await fetch(url.toString(),{headers:{apikey:PROMO_PUBLIC_KEY,Authorization:'Bearer '+s.access,Prefer:'count=exact'},cache:'no-store'});
+  if(!res.ok)throw Error('No se pudo leer el historial ('+res.status+'). Revisá la sesión y los permisos de tu cuenta.');
+  const rows=await res.json();if(!Array.isArray(rows))throw Error('Respuesta inesperada del historial.');
+  const range=res.headers.get('content-range')||'';const match=range.match(/\/(\d+)$/);
+  return {rows,count:match?Number(match[1]):rows.length,estimated:!match};
+ };
+ const now=new Date(),start=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),1)).toISOString();
+ const end=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth()+1,1)).toISOString();
+ const [all,monthly]=await Promise.all([fetchRows(),fetchRows({and:'(created_at.gte.'+start+',created_at.lt.'+end+')'},1)]);
+ // Intervalo [inicio de mes UTC, inicio del próximo mes UTC).
+ if(U.promoSession!==s)throw Error('La sesión cambió mientras se consultaba.');
+ return {items:all.rows.map(x=>({id:String(x.id||''),topic:String(x.topic||''),platform:String(x.platform||''),language:String(x.language||''),created_at:String(x.created_at||'')})),
+  total:all.count,monthTotal:monthly.count,syncedAt:new Date().toISOString(),estimated:all.estimated||monthly.estimated};
+}
+async function importSportFile(file){
+ if(!file)return;
+ const msg=$('#tennisMsg');if(msg)msg.textContent='Validando el archivo…';
+ try{
+  if(file.size>5*1024*1024)throw Error('El archivo supera el límite de 5 MB.');
+  const t=await file.text(),parsed=parseSportAiExport(JSON.parse(t));
+  D.tennisSync=parsed;save();
+ }catch(e){const m=$('#tennisMsg');if(m)m.textContent='⚠ '+String(e.message||e)}
+}
+// Eventos delegados para el selector de archivos: Safari iPhone / Archivos.
+document.addEventListener('change',e=>{if(e.target.id==='tennisFile')importSportFile(e.target.files?.[0])});
+A.promoLogin=async()=>{
+ const email=($('#promoEmail')?.value||'').trim(),pass=$('#promoPassword')?.value||'';
+ const b=$('#promoLogin');if(!email||!pass){U.promoMessage='Ingresá correo y contraseña.';render();return}
+ if(b)b.disabled=true;
+ try{const s=await authPromo(email,pass);U.promoSession=s;U.promoData=null;U.promoMessage='Sesión iniciada. Consultando historial…';render();U.promoData=await fetchPromoHistory();U.promoMessage='Historial sincronizado (solo lectura).'}
+ catch(e){U.promoMessage='⚠ '+String(e.message||e);if(!U.promoSession)U.promoData=null}
+ finally{render()}
+};
+A.promoRefresh=async()=>{U.promoMessage='Consultando Supabase…';render();try{U.promoData=await fetchPromoHistory();U.promoMessage='Generaciones actualizadas.'}catch(e){U.promoMessage='⚠ '+String(e.message||e)}render()};
+A.promoLogout=()=>{U.promoSession=null;U.promoData=null;U.promoMessage='Panel desconectado. No se guardaron credenciales.';render()};
+
+const TABS=[['home','🏠','Inicio'],['today','✅','Hoy'],['week','📅','Semana'],['biz','💼','Negocios'],['fin','💰','Dinero'],['goals','🎯','Metas']];
+function render(){const V={home,today:hoy,week,biz:neg,fin,goals}[U.tab]();
+ $('#app').innerHTML=`<main>${V}</main><button class="btn fab" data-a="fab" aria-label="Agregar">＋</button><nav>${TABS.map(t=>`<button class="${U.tab===t[0]?'on':''}" data-a="tab" data-v="${t[0]}"><b>${t[1]}</b>${t[2]}</button>`).join('')}</nav>`}
+render();
+</script></body></html>
